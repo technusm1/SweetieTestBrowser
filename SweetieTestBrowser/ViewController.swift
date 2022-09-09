@@ -6,8 +6,13 @@
 //
 
 import Cocoa
+import WebKit
 
 class ViewController: NSViewController {
+    
+    override func loadView() {
+        super.loadView()
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -20,7 +25,6 @@ class ViewController: NSViewController {
         // Update the view, if already loaded.
         }
     }
-
 
 }
 
