@@ -16,7 +16,12 @@ class ViewController: NSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        let visualEffectView = NSVisualEffectView(frame: view.frame)
+        visualEffectView.material = .appearanceBased
+        visualEffectView.blendingMode = .behindWindow
+        visualEffectView.state = .active
+        visualEffectView.addSubview(view)
+        view = visualEffectView
         // Do any additional setup after loading the view.
     }
 

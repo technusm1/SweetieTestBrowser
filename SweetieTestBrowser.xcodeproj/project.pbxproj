@@ -12,7 +12,8 @@
 		4C08ED5528CB32040087E860 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4C08ED5428CB32040087E860 /* Assets.xcassets */; };
 		4C08ED5828CB32050087E860 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4C08ED5628CB32050087E860 /* Main.storyboard */; };
 		4C08ED6028CB323F0087E860 /* MKWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C08ED5F28CB323F0087E860 /* MKWindowController.swift */; };
-		4C08ED6228CB7D630087E860 /* AddressBarAndTabStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C08ED6128CB7D630087E860 /* AddressBarAndTabStrip.swift */; };
+		4C6C2D2D28CC5014005F7D4B /* CompactAddressBarAndTabsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C6C2D2C28CC5014005F7D4B /* CompactAddressBarAndTabsView.swift */; };
+		4C6C2D2F28CC50F5005F7D4B /* TabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C6C2D2E28CC50F5005F7D4B /* TabView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,7 +24,8 @@
 		4C08ED5728CB32050087E860 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		4C08ED5928CB32050087E860 /* SweetieTestBrowser.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SweetieTestBrowser.entitlements; sourceTree = "<group>"; };
 		4C08ED5F28CB323F0087E860 /* MKWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKWindowController.swift; sourceTree = "<group>"; };
-		4C08ED6128CB7D630087E860 /* AddressBarAndTabStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBarAndTabStrip.swift; sourceTree = "<group>"; };
+		4C6C2D2C28CC5014005F7D4B /* CompactAddressBarAndTabsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompactAddressBarAndTabsView.swift; sourceTree = "<group>"; };
+		4C6C2D2E28CC50F5005F7D4B /* TabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,7 +63,8 @@
 				4C08ED5428CB32040087E860 /* Assets.xcassets */,
 				4C08ED5628CB32050087E860 /* Main.storyboard */,
 				4C08ED5F28CB323F0087E860 /* MKWindowController.swift */,
-				4C08ED6128CB7D630087E860 /* AddressBarAndTabStrip.swift */,
+				4C6C2D2C28CC5014005F7D4B /* CompactAddressBarAndTabsView.swift */,
+				4C6C2D2E28CC50F5005F7D4B /* TabView.swift */,
 				4C08ED5928CB32050087E860 /* SweetieTestBrowser.entitlements */,
 			);
 			path = SweetieTestBrowser;
@@ -137,10 +140,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C6C2D2F28CC50F5005F7D4B /* TabView.swift in Sources */,
 				4C08ED5328CB32030087E860 /* ViewController.swift in Sources */,
-				4C08ED6228CB7D630087E860 /* AddressBarAndTabStrip.swift in Sources */,
 				4C08ED5128CB32030087E860 /* AppDelegate.swift in Sources */,
 				4C08ED6028CB323F0087E860 /* MKWindowController.swift in Sources */,
+				4C6C2D2D28CC5014005F7D4B /* CompactAddressBarAndTabsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

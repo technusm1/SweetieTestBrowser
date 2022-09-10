@@ -90,7 +90,7 @@ extension MKWindowController: NSToolbarDelegate {
             field.placeholderString = "Enter a URL, or search something..."
             field.delegate = self
             item.view = field
-            let widthConst = item.view?.widthAnchor.constraint(equalToConstant: self.window!.frame.width - 400)
+            let widthConst = item.view?.widthAnchor.constraint(equalToConstant: self.window!.frame.width / 2.5)
             widthConst?.isActive = true
             widthConst?.identifier = "SearchbarWidthConst"
             self.searchField = field
@@ -136,7 +136,7 @@ extension MKWindowController: NSWindowDelegate {
                 }) {
                     item.view?.removeConstraint(constraintToRemove)
                 }
-                let widthConst = item.view?.widthAnchor.constraint(equalToConstant: self.window!.frame.width - 400)
+                let widthConst = item.view?.widthAnchor.constraint(equalToConstant: self.window!.frame.width / 2.5)
                 widthConst?.isActive = true
                 widthConst?.identifier = "SearchbarWidthConst"
             }
