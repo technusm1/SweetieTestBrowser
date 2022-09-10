@@ -90,8 +90,9 @@ extension MKWindowController: NSToolbarDelegate {
             field.placeholderString = "Enter a URL, or search something..."
             field.delegate = self
             item.view = field
-            item.minSize = CGSize(width: 1000, height: 0)
-            item.maxSize = CGSize(width: (self.window?.frame.width ?? 100)/2, height: 0)
+            let widthConst = item.view?.widthAnchor.constraint(equalToConstant: self.window!.frame.width - 400)
+            widthConst?.isActive = true
+            widthConst?.identifier = "SearchbarWidthConst"
             self.searchField = field
             return item
         case .newTabButtonIdentifier:
@@ -128,7 +129,17 @@ extension NSToolbarItem.Identifier {
 
 extension MKWindowController: NSWindowDelegate {
     func windowDidResize(_ notification: Notification) {
-        print(self.window?.frame)
-        
+        for item in self.window?.toolbar?.items ?? [] {
+            if item.itemIdentifier == .searchBarAndTabStripIdentifier {
+                if let constraintToRemove = item.view?.constraints.first(where: { constraint in
+                    constraint.identifier == "SearchbarWidthConst"
+                }) {
+                    item.view?.removeConstraint(constraintToRemove)
+                }
+                let widthConst = item.view?.widthAnchor.constraint(equalToConstant: self.window!.frame.width - 400)
+                widthConst?.isActive = true
+                widthConst?.identifier = "SearchbarWidthConst"
+            }
+        }
     }
 }
