@@ -24,13 +24,12 @@ class MKTabView: NSView {
     
     private lazy var area = makeTrackingArea()
     var closeBtn: NSButton = NSButton(image: getCloseBtnImg(), target: nil, action: nil)
-    var closeBtnTarget: AnyObject?
-    var closeBtnAction: Selector?
     var title: String?
     var favIcon: NSImage?
     var favIconImageView: NSImageView!
     
-    var onSelect: (()->())?
+    var onSelect: (() -> ())?
+    var onClose: (() -> ())?
     
     var _tag = -1
     override var tag: Int {
@@ -50,6 +49,10 @@ class MKTabView: NSView {
         }
     }
     var webView: WKWebView!
+    
+    @objc func closeAction() {
+        onClose?()
+    }
     
     public override func mouseEntered(with event: NSEvent) {
         isMouseOverTheView = true
@@ -90,8 +93,8 @@ class MKTabView: NSView {
         self.webView.allowsBackForwardNavigationGestures = true
         
         // Init close btn
-        if let closeBtnTarget = closeBtnTarget { closeBtn.target = closeBtnTarget }
-        if let closeBtnAction = closeBtnAction { closeBtn.action = closeBtnAction }
+        closeBtn.target = self
+        closeBtn.action = #selector(closeAction)
         closeBtn.isHidden = true
         closeBtn.isBordered = false
         closeBtn.translatesAutoresizingMaskIntoConstraints = false

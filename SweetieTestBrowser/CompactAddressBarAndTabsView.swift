@@ -10,6 +10,8 @@ import Cocoa
 protocol CompactAddressBarAndTabsViewDelegate {
     // This method is called when a tab switch happens, or when user enters a new URL in a tab
     func addressBarAndTabView(didSelectTab tab: MKTabView, atIndex index: Int, fromIndex previousIndex: Int)
+    // This method is called when a tab is removed, i.e. when tab is closed by the user
+    func addressBarAndTabView(tabRemoved tab: MKTabView, atIndex index: Int)
 }
 
 class CompactAddressBarAndTabsView: NSView {
@@ -28,6 +30,10 @@ class CompactAddressBarAndTabsView: NSView {
             // Unselect the tab at oldValue
             if oldValue >= 0 && oldValue < tabs.count {
                 tabs[oldValue].isSelected = false
+            }
+            guard currentTabIndex >= 0 else {
+                self.addressBarAndSearchField.stringValue = ""
+                return
             }
             self.addressBarAndSearchField.stringValue = tabs[currentTabIndex].currentURL
             delegate?.addressBarAndTabView(didSelectTab: tabs[currentTabIndex], atIndex: currentTabIndex, fromIndex: oldValue)
@@ -169,6 +175,20 @@ class CompactAddressBarAndTabsView: NSView {
         view2.onSelect = {
             self.currentTabIndex = view2.tag
         }
+        view2.onClose = {
+            if view2.tag == self.tabs.count - 1 {
+                // the last tab is being closed
+                self.currentTabIndex = view2.tag - 1
+            } else {
+                self.currentTabIndex = view2.tag + 1
+            }
+            self.tabs.remove(at: view2.tag)
+            for i in view2.tag..<self.tabs.count {
+                self.tabs[i].tag -= 1
+            }
+            self.delegate?.addressBarAndTabView(tabRemoved: view2, atIndex: view2.tag)
+            self.layoutTabs()
+        }
         self.tabs.append(view2)
         if let url = url {
             view2.currentURL = url
@@ -179,6 +199,9 @@ class CompactAddressBarAndTabsView: NSView {
     
     @objc func loadURL(_ sender: NSSearchField) {
         guard !self.addressBarAndSearchField.stringValue.isEmpty else { return }
+        if !self.addressBarAndSearchField.stringValue.hasPrefix("http://") && !self.addressBarAndSearchField.stringValue.hasPrefix("https://") {
+            self.addressBarAndSearchField.stringValue = "https://" + self.addressBarAndSearchField.stringValue
+        }
         print("load url: \(self.addressBarAndSearchField.stringValue)")
         let url = self.addressBarAndSearchField.stringValue
         guard !url.isEmpty && url.isValidURL else { return }

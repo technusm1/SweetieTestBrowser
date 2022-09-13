@@ -57,4 +57,8 @@ extension ViewController: CompactAddressBarAndTabsViewDelegate {
             tab.webView.isHidden = false
         }
     }
+    
+    func addressBarAndTabView(tabRemoved tab: MKTabView, atIndex index: Int) {
+        view.subviews.remove(at: index)
+    }
 }
