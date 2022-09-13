@@ -172,7 +172,9 @@ class MKTabView: NSView {
 
 extension MKTabView: WKNavigationDelegate{
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        self.title = webView.title ?? self.title
+        if let title = webView.title, !title.isEmpty {
+            self.title = title
+        }
         self.toolTip = webView.title ?? self.title
         self.currentURL = webView.url?.absoluteString ?? ""
     }
