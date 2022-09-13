@@ -36,17 +36,25 @@ class ViewController: NSViewController {
 }
 
 extension ViewController: CompactAddressBarAndTabsViewDelegate {
-    func addressBarAndTabView(didSelectTab tab: MKTabView, atIndex index: Int) {
+    func addressBarAndTabView(didSelectTab tab: MKTabView, atIndex index: Int, fromIndex previousIndex: Int) {
         print("IN THE DELEGATE MAN")
-        guard let subView = tab.webView else {
-            print("KNIVES OUT")
-            return
+        guard let subView = tab.webView else { return }
+        if index >= view.subviews.count {
+            view.addSubview(subView)
+            subView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+            subView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+            subView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+            subView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         }
-        view.addSubview(subView)
-        print("IN THE DELEGATE AGAIN MAN")
-        subView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-        subView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-        subView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-        subView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        
+        if previousIndex >= 0 {
+            view.subviews[previousIndex].isHidden = true
+        }
+        if tab.currentURL.isEmpty {
+            tab.webView.isHidden = true
+            return
+        } else {
+            tab.webView.isHidden = false
+        }
     }
 }

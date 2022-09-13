@@ -64,6 +64,7 @@ extension MKWindowController: NSToolbarDelegate {
     
     @objc func newTabBtnPressed(_ sender: Any) {
         print("Adding New Tab")
+        self.addressBarAndTabsView?.addressBarAndSearchField.stringValue = ""
         self.addressBarAndTabsView?.createNewTab(url: nil)
     }
     
@@ -98,7 +99,7 @@ extension MKWindowController: NSToolbarDelegate {
         case .searchBarAndTabStripIdentifier:
             let item = NSToolbarItem(itemIdentifier: itemIdentifier)
             let compactAddressBarAndTabsView = CompactAddressBarAndTabsView(frame: CGRect(x: 0, y: 0, width: self.window!.frame.width / 2.5, height: 40))
-            compactAddressBarAndTabsView.delegate = self.contentViewController as! CompactAddressBarAndTabsViewDelegate
+            compactAddressBarAndTabsView.delegate = self.contentViewController as? CompactAddressBarAndTabsViewDelegate
             item.view = compactAddressBarAndTabsView
             item.view?.heightAnchor.constraint(equalToConstant: 30).isActive = true
             let widthConst = item.view?.widthAnchor.constraint(equalToConstant: self.window!.frame.width / 2.5)

@@ -8,7 +8,8 @@
 import Cocoa
 
 protocol CompactAddressBarAndTabsViewDelegate {
-    func addressBarAndTabView(didSelectTab tab: MKTabView, atIndex index: Int)
+    // This method is called when a tab switch happens, or when user enters a new URL in a tab
+    func addressBarAndTabView(didSelectTab tab: MKTabView, atIndex index: Int, fromIndex previousIndex: Int)
 }
 
 class CompactAddressBarAndTabsView: NSView {
@@ -28,6 +29,7 @@ class CompactAddressBarAndTabsView: NSView {
             if oldValue >= 0 && oldValue < tabs.count {
                 tabs[oldValue].isSelected = false
             }
+            delegate?.addressBarAndTabView(didSelectTab: tabs[currentTabIndex], atIndex: currentTabIndex, fromIndex: oldValue)
         }
     }
     
@@ -155,7 +157,7 @@ class CompactAddressBarAndTabsView: NSView {
     }
     
     @objc func didSelectTabItem(_ sender: MKTabView) {
-        delegate?.addressBarAndTabView(didSelectTab: sender, atIndex: sender.tag)
+        delegate?.addressBarAndTabView(didSelectTab: sender, atIndex: sender.tag, fromIndex: -1)
     }
     
     func createNewTab(url: String?) {
@@ -164,18 +166,27 @@ class CompactAddressBarAndTabsView: NSView {
         view2.translatesAutoresizingMaskIntoConstraints = false
         view2.tag = tabs.count
         self.tabs.append(view2)
-        currentTabIndex = tabs.count - 1
         if let url = url {
             view2.currentURL = url
         }
+        currentTabIndex = tabs.count - 1
         layoutTabs()
-        delegate?.addressBarAndTabView(didSelectTab: tabs[currentTabIndex], atIndex: currentTabIndex)
     }
     
     @objc func loadURL(_ sender: NSSearchField) {
         guard !self.addressBarAndSearchField.stringValue.isEmpty else { return }
         print("load url: \(self.addressBarAndSearchField.stringValue)")
-        createNewTab(url: self.addressBarAndSearchField.stringValue)
+        let url = self.addressBarAndSearchField.stringValue
+        guard !url.isEmpty && url.isValidURL else { return }
+        
+        if currentTabIndex < 0 {
+            // we're in an empty state
+            createNewTab(url: self.addressBarAndSearchField.stringValue)
+        } else {
+            // A tab is already selected. We just have to change its url
+            self.tabs[currentTabIndex].currentURL = url
+            delegate?.addressBarAndTabView(didSelectTab: self.tabs[currentTabIndex], atIndex: currentTabIndex, fromIndex: currentTabIndex)
+        }
     }
     
     @objc func reloadCurrentURL() {}
