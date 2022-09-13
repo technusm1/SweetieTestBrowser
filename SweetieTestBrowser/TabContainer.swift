@@ -27,7 +27,7 @@ class MKTabView: NSView {
     
     var title: String = "" {
         didSet {
-            self.titleLabel.stringValue = title
+            self.titleLabel.stringValue = title + String(repeating: " ", count: abs(20 - title.count))
         }
     }
     var titleLabel: NSTextField!
@@ -112,7 +112,7 @@ class MKTabView: NSView {
         // Init title
         self.titleLabel = NSTextField()
         self.titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        self.titleLabel.stringValue = (title == "" ? "Untitled Page" + String(repeating: " ", count: 5) : title)
+        self.titleLabel.stringValue = (title == "" ? "Untitled Page" + String(repeating: " ", count: 15) : title)
         self.titleLabel.alignment = .left
         self.titleLabel.lineBreakMode = .byTruncatingTail
         self.titleLabel.setContentCompressionResistancePriority(.fittingSizeCompression, for: .horizontal)

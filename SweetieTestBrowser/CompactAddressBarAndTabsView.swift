@@ -185,16 +185,11 @@ class CompactAddressBarAndTabsView: NSView {
             self.currentTabIndex = view2.tag
         }
         view2.onClose = {
-            if view2.tag == self.tabs.count - 1 {
-                // the last tab is being closed
-                self.currentTabIndex = view2.tag - 1
-            } else {
-                self.currentTabIndex = view2.tag + 1
-            }
             self.tabs.remove(at: view2.tag)
             for i in view2.tag..<self.tabs.count {
                 self.tabs[i].tag -= 1
             }
+            self.currentTabIndex -= 1
             self.delegate?.addressBarAndTabView(tabRemoved: view2, atIndex: view2.tag)
             self.layoutTabs()
         }
