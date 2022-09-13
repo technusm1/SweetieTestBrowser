@@ -26,6 +26,10 @@ class ViewController: NSViewController {
         visualEffectView.state = .active
         view = visualEffectView
     }
+    
+    override func viewDidAppear() {
+        super.viewDidAppear()
+    }
 
     override var representedObject: Any? {
         didSet {
@@ -38,6 +42,13 @@ class ViewController: NSViewController {
 extension ViewController: CompactAddressBarAndTabsViewDelegate {
     func addressBarAndTabView(didSelectTab tab: MKTabView, atIndex index: Int, fromIndex previousIndex: Int) {
         print("IN THE DELEGATE MAN")
+        self.view.window?.makeFirstResponder(
+            self.view.window?.toolbar?.items.first { item in
+                item.itemIdentifier == .searchBarAndTabStripIdentifier
+            }?.view?.subviews.first { subView in
+                subView is NSSearchField
+            }
+        )
         guard let subView = tab.webView else { return }
         if index >= view.subviews.count {
             view.addSubview(subView)
@@ -60,5 +71,12 @@ extension ViewController: CompactAddressBarAndTabsViewDelegate {
     
     func addressBarAndTabView(tabRemoved tab: MKTabView, atIndex index: Int) {
         view.subviews.remove(at: index)
+        self.view.window?.makeFirstResponder(
+            self.view.window?.toolbar?.items.first { item in
+                item.itemIdentifier == .searchBarAndTabStripIdentifier
+            }?.view?.subviews.first { subView in
+                subView is NSSearchField
+            }
+        )
     }
 }

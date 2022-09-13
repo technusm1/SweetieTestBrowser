@@ -23,6 +23,13 @@ class MKWindowController: NSWindowController {
             self.window?.setFrame(frameRect, display: true, animate: true)
         }
         configureToolbar()
+        self.window?.makeFirstResponder(
+            self.window?.toolbar?.items.first { item in
+                item.itemIdentifier == .searchBarAndTabStripIdentifier
+            }?.view?.subviews.first { subView in
+                subView is NSSearchField
+            }
+        )
     }
     
     func configureToolbar() {
