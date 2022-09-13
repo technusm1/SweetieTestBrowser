@@ -29,6 +29,7 @@ class CompactAddressBarAndTabsView: NSView {
             if oldValue >= 0 && oldValue < tabs.count {
                 tabs[oldValue].isSelected = false
             }
+            self.addressBarAndSearchField.stringValue = tabs[currentTabIndex].currentURL
             delegate?.addressBarAndTabView(didSelectTab: tabs[currentTabIndex], atIndex: currentTabIndex, fromIndex: oldValue)
         }
     }
@@ -165,6 +166,9 @@ class CompactAddressBarAndTabsView: NSView {
         let view2 = MKTabView(frame: .zero)
         view2.translatesAutoresizingMaskIntoConstraints = false
         view2.tag = tabs.count
+        view2.onSelect = {
+            self.currentTabIndex = view2.tag
+        }
         self.tabs.append(view2)
         if let url = url {
             view2.currentURL = url

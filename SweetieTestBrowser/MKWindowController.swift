@@ -64,7 +64,6 @@ extension MKWindowController: NSToolbarDelegate {
     
     @objc func newTabBtnPressed(_ sender: Any) {
         print("Adding New Tab")
-        self.addressBarAndTabsView?.addressBarAndSearchField.stringValue = ""
         self.addressBarAndTabsView?.createNewTab(url: nil)
     }
     

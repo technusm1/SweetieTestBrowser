@@ -29,6 +29,9 @@ class MKTabView: NSView {
     var title: String?
     var favIcon: NSImage?
     var favIconImageView: NSImageView!
+    
+    var onSelect: (()->())?
+    
     var _tag = -1
     override var tag: Int {
         get {
@@ -58,7 +61,7 @@ class MKTabView: NSView {
     
     public override func mouseDown(with event: NSEvent) {
         isSelected = true
-        print("Click")
+        onSelect?()
     }
     
     private func makeTrackingArea() -> NSTrackingArea {
@@ -144,7 +147,7 @@ class MKTabView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         layer?.cornerRadius = 4
         if isSelected {
-            layer?.backgroundColor = NSColor.lightGray.blended(withFraction: 0.25, of: .white)?.cgColor
+            layer?.backgroundColor = NSColor.lightGray.blended(withFraction: 0.1, of: .white)?.cgColor
         } else if isMouseOverTheView {
             layer?.backgroundColor = NSColor.lightGray.blended(withFraction: 0.3, of: .white)?.cgColor
         } else {
