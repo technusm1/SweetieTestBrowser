@@ -24,7 +24,14 @@ class MKTabView: NSView {
     
     private lazy var area = makeTrackingArea()
     var closeBtn: NSButton = NSButton(image: getCloseBtnImg(), target: nil, action: nil)
-    var title: String?
+    
+    var title: String = "" {
+        didSet {
+            self.titleLabel.stringValue = title
+        }
+    }
+    var titleLabel: NSTextField!
+    
     var favIcon: NSImage?
     var favIconImageView: NSImageView!
     
@@ -101,17 +108,18 @@ class MKTabView: NSView {
         addSubview(closeBtn)
         
         // Init title
-        let title = title ?? "Untitled Page - No title at all..."
-        let titleLabel = NSTextField()
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.stringValue = title
-        titleLabel.lineBreakMode = .byTruncatingTail
-        titleLabel.isEditable = false
-        titleLabel.isSelectable = false
-        titleLabel.isBezeled = false
-        titleLabel.isBordered = false
-        titleLabel.textColor = .textColor
-        titleLabel.backgroundColor = .clear
+        self.titleLabel = NSTextField()
+        self.titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        self.titleLabel.stringValue = (title == "" ? "Untitled Page" + String(repeating: " ", count: 5) : title)
+        self.titleLabel.alignment = .left
+        self.titleLabel.lineBreakMode = .byTruncatingTail
+        self.titleLabel.setContentCompressionResistancePriority(.fittingSizeCompression, for: .horizontal)
+        self.titleLabel.isEditable = false
+        self.titleLabel.isSelectable = false
+        self.titleLabel.isBezeled = false
+        self.titleLabel.isBordered = false
+        self.titleLabel.textColor = .textColor
+        self.titleLabel.backgroundColor = .clear
         addSubview(titleLabel)
         
         // Init favicon
@@ -131,9 +139,9 @@ class MKTabView: NSView {
         closeBtn.widthAnchor.constraint(lessThanOrEqualToConstant: 32).isActive = true
         closeBtn.heightAnchor.constraint(lessThanOrEqualToConstant: 32).isActive = true
         
-        titleLabel.leadingAnchor.constraint(equalTo: self.favIconImageView.trailingAnchor, constant: 4).isActive = true
-        titleLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -2).isActive = true
-        titleLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
+        self.titleLabel.leadingAnchor.constraint(equalTo: self.closeBtn.trailingAnchor, constant: 4).isActive = true
+        self.titleLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -4).isActive = true
+        self.titleLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
 //        titleLabel.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
     }
     
@@ -154,10 +162,15 @@ class MKTabView: NSView {
         } else if isMouseOverTheView {
             layer?.backgroundColor = NSColor.lightGray.blended(withFraction: 0.3, of: .white)?.cgColor
         } else {
-            layer?.backgroundColor = NSColor.lightGray.blended(withFraction: 0.5, of: .white)?.cgColor
+            layer?.backgroundColor = NSColor.lightGray.blended(withFraction: 0.7, of: .white)?.cgColor
         }
         super.draw(dirtyRect)
     }
 }
 
-extension MKTabView: WKNavigationDelegate{}
+extension MKTabView: WKNavigationDelegate{
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        self.title = webView.title ?? self.title
+        self.toolTip = webView.title ?? self.title
+    }
+}

@@ -23,6 +23,7 @@ class CompactAddressBarAndTabsView: NSView {
     var tabs: [MKTabView]
     var currentTabIndex: Int = -1 {
         didSet {
+            if currentTabIndex == oldValue { return }
             // Select the tab at currentTabIndex
             if currentTabIndex >= 0 && currentTabIndex < tabs.count {
                 tabs[currentTabIndex].isSelected = true
