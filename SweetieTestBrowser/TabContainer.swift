@@ -48,14 +48,16 @@ class MKTabView: NSView {
         }
     }
     
-    var currentURL: String = "" {
-        didSet {
-            if !self.currentURL.isEmpty && self.currentURL.isValidURL {
-                self.webView.load(URLRequest(url: URL(string: self.currentURL) ?? URL(string: "maheepk.net")!))
-            }
+    // currentURL will be set by the delegate
+    var currentURL: String = ""
+    var webView: WKWebView!
+    
+    func navigateTo(_ url: String) {
+        if !url.isEmpty && url.isValidURL {
+            self.currentURL = url
+            self.webView.load(URLRequest(url: URL(string: url) ?? URL(string: "https://kagi.com")!))
         }
     }
-    var webView: WKWebView!
     
     @objc func closeAction() {
         onClose?()
@@ -172,5 +174,6 @@ extension MKTabView: WKNavigationDelegate{
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         self.title = webView.title ?? self.title
         self.toolTip = webView.title ?? self.title
+        self.currentURL = webView.url?.absoluteString ?? ""
     }
 }

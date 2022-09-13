@@ -62,6 +62,18 @@ extension MKWindowController: NSToolbarDelegate {
         print("Hit detect")
     }
     
+    @objc func toolbarNavigationPressed(_ sender: Any) {
+        guard let sender = sender as? NSToolbarItem else { return }
+        print("Hit detect toolbar")
+        if sender.label == "Back" {
+            // Back button pressed
+            self.addressBarAndTabsView?.goBack()
+        } else if sender.label == "Forward" {
+            // Forward button pressed
+            self.addressBarAndTabsView?.goForward()
+        }
+    }
+    
     @objc func newTabBtnPressed(_ sender: Any) {
         print("Adding New Tab")
         self.addressBarAndTabsView?.createNewTab(url: nil)
@@ -76,7 +88,11 @@ extension MKWindowController: NSToolbarDelegate {
             
             let toolbarItemGroup: NSToolbarItemGroup
             if #available(macOS 10.15, *) {
-                toolbarItemGroup = NSToolbarItemGroup(itemIdentifier: itemIdentifier, images: images, selectionMode: .momentary, labels: titles, target: self, action: #selector(toolbarPickerDidSelectItem(_:)))
+                toolbarItemGroup = NSToolbarItemGroup(itemIdentifier: itemIdentifier, images: images, selectionMode: .momentary, labels: titles, target: nil, action: nil)
+                for item in toolbarItemGroup.subitems {
+                    item.target = self
+                    item.action = #selector(toolbarNavigationPressed(_:))
+                }
                 toolbarItemGroup.controlRepresentation = .automatic
                 toolbarItemGroup.selectionMode = .momentary
             } else {
@@ -86,7 +102,7 @@ extension MKWindowController: NSToolbarDelegate {
                     item.image = image
                     item.label = title
                     item.target = self
-                    item.action = #selector(toolbarPickerDidSelectItem(_:))
+                    item.action = #selector(toolbarNavigationPressed(_:))
                     return item
                 })
             }

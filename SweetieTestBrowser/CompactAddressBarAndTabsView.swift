@@ -164,8 +164,16 @@ class CompactAddressBarAndTabsView: NSView {
         self.tabContainerScrollView?.documentView?.trailingAnchor.constraint(equalTo: previousTabView?.trailingAnchor ?? self.tabContainerScrollView!.documentView!.leadingAnchor).isActive = true
     }
     
-    @objc func didSelectTabItem(_ sender: MKTabView) {
-        delegate?.addressBarAndTabView(didSelectTab: sender, atIndex: sender.tag, fromIndex: -1)
+    func goForward() {
+        guard currentTabIndex >= 0 else { return }
+        self.tabs[currentTabIndex].webView.goForward()
+        self.addressBarAndSearchField.stringValue = self.tabs[currentTabIndex].webView.url?.absoluteString ?? ""
+    }
+    
+    func goBack() {
+        guard currentTabIndex >= 0 else { return }
+        self.tabs[currentTabIndex].webView.goBack()
+        self.addressBarAndSearchField.stringValue = self.tabs[currentTabIndex].webView.url?.absoluteString ?? ""
     }
     
     func createNewTab(url: String?) {
@@ -192,7 +200,7 @@ class CompactAddressBarAndTabsView: NSView {
         }
         self.tabs.append(view2)
         if let url = url {
-            view2.currentURL = url
+            view2.navigateTo(url)
         }
         currentTabIndex = tabs.count - 1
         layoutTabs()
@@ -212,7 +220,7 @@ class CompactAddressBarAndTabsView: NSView {
             createNewTab(url: self.addressBarAndSearchField.stringValue)
         } else {
             // A tab is already selected. We just have to change its url
-            self.tabs[currentTabIndex].currentURL = url
+            self.tabs[currentTabIndex].navigateTo(url)
             delegate?.addressBarAndTabView(didSelectTab: self.tabs[currentTabIndex], atIndex: currentTabIndex, fromIndex: currentTabIndex)
         }
     }
