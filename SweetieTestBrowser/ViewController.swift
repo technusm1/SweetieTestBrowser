@@ -16,13 +16,15 @@ class ViewController: NSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        print("view did load called")
         let visualEffectView = NSVisualEffectView(frame: view.frame)
-        visualEffectView.material = .appearanceBased
+        // Non-semantic materials are deprecated in 10.14. So, this is now deprecated:
+        // visualEffectView.material = .appearanceBased
+        // Instead, we set self.window?.backgroundColor = .windowBackgroundColor
+        // in MKWindowController to get the same effect.
         visualEffectView.blendingMode = .behindWindow
         visualEffectView.state = .active
-        visualEffectView.addSubview(view)
         view = visualEffectView
-        // Do any additional setup after loading the view.
     }
 
     override var representedObject: Any? {
@@ -33,3 +35,18 @@ class ViewController: NSViewController {
 
 }
 
+extension ViewController: CompactAddressBarAndTabsViewDelegate {
+    func addressBarAndTabView(didSelectTab tab: MKTabView, atIndex index: Int) {
+        print("IN THE DELEGATE MAN")
+        guard let subView = tab.webView else {
+            print("KNIVES OUT")
+            return
+        }
+        view.addSubview(subView)
+        print("IN THE DELEGATE AGAIN MAN")
+        subView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        subView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+        subView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        subView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+    }
+}

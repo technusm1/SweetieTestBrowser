@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C01D44E28CF4995007CC3B4 /* TabContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C01D44D28CF4995007CC3B4 /* TabContainer.swift */; };
 		4C08ED5128CB32030087E860 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C08ED5028CB32030087E860 /* AppDelegate.swift */; };
 		4C08ED5328CB32030087E860 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C08ED5228CB32030087E860 /* ViewController.swift */; };
 		4C08ED5528CB32040087E860 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4C08ED5428CB32040087E860 /* Assets.xcassets */; };
@@ -17,6 +18,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4C01D44D28CF4995007CC3B4 /* TabContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabContainer.swift; sourceTree = "<group>"; };
 		4C08ED4D28CB32030087E860 /* SweetieTestBrowser.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SweetieTestBrowser.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C08ED5028CB32030087E860 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4C08ED5228CB32030087E860 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -58,6 +60,7 @@
 		4C08ED4F28CB32030087E860 /* SweetieTestBrowser */ = {
 			isa = PBXGroup;
 			children = (
+				4C01D44D28CF4995007CC3B4 /* TabContainer.swift */,
 				4C08ED5028CB32030087E860 /* AppDelegate.swift */,
 				4C08ED5228CB32030087E860 /* ViewController.swift */,
 				4C08ED5428CB32040087E860 /* Assets.xcassets */,
@@ -143,6 +146,7 @@
 				4C6C2D2F28CC50F5005F7D4B /* TabView.swift in Sources */,
 				4C08ED5328CB32030087E860 /* ViewController.swift in Sources */,
 				4C08ED5128CB32030087E860 /* AppDelegate.swift in Sources */,
+				4C01D44E28CF4995007CC3B4 /* TabContainer.swift in Sources */,
 				4C08ED6028CB323F0087E860 /* MKWindowController.swift in Sources */,
 				4C6C2D2D28CC5014005F7D4B /* CompactAddressBarAndTabsView.swift in Sources */,
 			);
