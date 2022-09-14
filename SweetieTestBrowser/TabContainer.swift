@@ -191,5 +191,13 @@ extension MKTabView: WKNavigationDelegate{
         }
         self.toolTip = webView.title ?? self.title
         self.currentURL = webView.url?.absoluteString ?? ""
+        if isSelected {
+            let searchField = self.window?.toolbar?.items.first { toolbarItem in
+                toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
+            }?.view?.subviews.first { subView in
+                subView is NSSearchField
+            } as? NSSearchField
+            searchField?.stringValue = self.currentURL
+        }
     }
 }
