@@ -56,6 +56,12 @@ class MKTabView: NSView {
     func navigateTo(_ url: String) {
         if !url.isEmpty && url.isValidURL {
             self.currentURL = url
+            let compactAddressBarAndTabsView = self.window?.toolbar?.items.first { toolbarItem in
+                toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
+            }?.view as? CompactAddressBarAndTabsView
+            compactAddressBarAndTabsView?.btnReload.isHidden = true
+            compactAddressBarAndTabsView?.btnStopLoad.isHidden = false
+            
             self.webView.load(URLRequest(url: URL(string: url) ?? URL(string: "https://kagi.com")!))
             FaviconFinder(url: URL(string: url) ?? URL(string: "https://kagi.com")!).downloadFavicon { result in
                 switch result {
@@ -198,6 +204,12 @@ extension MKTabView: WKNavigationDelegate{
                 subView is NSSearchField
             } as? NSSearchField
             searchField?.stringValue = self.currentURL
+            
+            let compactAddressBarAndTabsView = self.window?.toolbar?.items.first { toolbarItem in
+                toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
+            }?.view as? CompactAddressBarAndTabsView
+            compactAddressBarAndTabsView?.btnReload.isHidden = false
+            compactAddressBarAndTabsView?.btnStopLoad.isHidden = true
         }
     }
 }

@@ -17,7 +17,8 @@ protocol CompactAddressBarAndTabsViewDelegate {
 class CompactAddressBarAndTabsView: NSView {
     var addressBarAndSearchField: NSSearchField
     
-    var btnReloadOrStop: NSButton?
+    var btnReload: NSButton!
+    var btnStopLoad: NSButton!
     
     var tabContainerScrollView: NSScrollView?
     var tabs: [MKTabView]
@@ -73,14 +74,17 @@ class CompactAddressBarAndTabsView: NSView {
         reloadButton.translatesAutoresizingMaskIntoConstraints = false
         reloadButton.isBordered = false
         reloadButton.bezelStyle = .regularSquare
-        self.btnReloadOrStop = reloadButton
-        addSubview(reloadButton)
+        self.btnReload = reloadButton
+        self.btnReload.isHidden = true
+        addSubview(self.btnReload)
         
-//        let stopLoadButton = NSButton(image: NSImage(named: NSImage.stopProgressTemplateName)!, target: self, action: #selector(disableLoadingForCurrentURL))
-//        stopLoadButton.isBordered = false
-//        stopLoadButton.bezelStyle = .regularSquare
-////        self.btnReloadOrStop = stopLoadButton
-//        addSubview(stopLoadButton)
+        let stopLoadButton = NSButton(image: NSImage(named: NSImage.stopProgressTemplateName)!, target: self, action: #selector(disableLoadingForCurrentURL))
+        stopLoadButton.translatesAutoresizingMaskIntoConstraints = false
+        stopLoadButton.isBordered = false
+        stopLoadButton.bezelStyle = .regularSquare
+        self.btnStopLoad = stopLoadButton
+        self.btnStopLoad.isHidden = true
+        addSubview(self.btnStopLoad)
         
         // init the scroll view
         self.tabContainerScrollView = NSScrollView()
@@ -111,7 +115,7 @@ class CompactAddressBarAndTabsView: NSView {
         self.addressBarAndSearchField.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
         self.tabContainerScrollView?.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
         self.tabContainerScrollView?.contentView.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
-        self.btnReloadOrStop?.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
+        self.btnReload.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
         // constraints on documentView will be setup in layoutTabs
         
         // Setup tabContainerScrollView
@@ -130,8 +134,12 @@ class CompactAddressBarAndTabsView: NSView {
         // Setup address bar
         self.addressBarAndSearchField.trailingAnchor.constraint(equalTo: self.tabContainerScrollView!.leadingAnchor, constant: -5).isActive = true
         self.addressBarAndSearchField.leadingAnchor.constraint(equalTo: self.leadingAnchor).isActive = true
-        self.btnReloadOrStop?.centerYAnchor.constraint(equalTo: self.addressBarAndSearchField.centerYAnchor).isActive = true
-        self.btnReloadOrStop?.trailingAnchor.constraint(equalTo: self.addressBarAndSearchField.trailingAnchor, constant: -5).isActive = true
+        
+        // Setup reload and stopLoad buttons
+        self.btnReload.centerYAnchor.constraint(equalTo: self.addressBarAndSearchField.centerYAnchor).isActive = true
+        self.btnReload.trailingAnchor.constraint(equalTo: self.addressBarAndSearchField.trailingAnchor, constant: -24).isActive = true
+        self.btnStopLoad.centerYAnchor.constraint(equalTo: self.btnReload.centerYAnchor).isActive = true
+        self.btnStopLoad.centerXAnchor.constraint(equalTo: self.btnReload.centerXAnchor).isActive = true
     }
     
     private func layoutTabs() {
@@ -220,7 +228,13 @@ class CompactAddressBarAndTabsView: NSView {
         }
     }
     
-    @objc func reloadCurrentURL() {}
+    @objc func reloadCurrentURL() {
+        print("reload called")
+        self.tabs[currentTabIndex].webView.reload()
+    }
     
-    @objc func disableLoadingForCurrentURL() {}
+    @objc func disableLoadingForCurrentURL() {
+        print("stop load called")
+        self.tabs[currentTabIndex].webView.stopLoading()
+    }
 }
