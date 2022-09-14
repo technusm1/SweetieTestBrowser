@@ -356,6 +356,25 @@
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="hB3-LF-h0Y"/>
+                                        <menuItem title="Switch To Next Tab" id="Jh4-Pc-tNV">
+                                            <string key="keyEquivalent" base64-UTF8="YES">
+CQ
+</string>
+                                            <modifierMask key="keyEquivalentModifierMask" control="YES"/>
+                                            <connections>
+                                                <action selector="switchToNextTabMenuItemPressed:" target="Voe-Tx-rLC" id="BLF-uw-8QR"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Switch To Previous Tab" id="ySE-k7-Ube">
+                                            <string key="keyEquivalent" base64-UTF8="YES">
+GQ
+</string>
+                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" control="YES"/>
+                                            <connections>
+                                                <action selector="switchToPreviousTabMenuItemPressed:" target="Voe-Tx-rLC" id="0LW-wa-U6b"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="RLj-ZE-Hgo"/>
                                         <menuItem title="Show Sidebar" keyEquivalent="s" id="kIP-vf-haE">
                                             <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
                                             <connections>

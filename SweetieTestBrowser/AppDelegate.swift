@@ -24,6 +24,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         wc.addressBarAndTabsView?.closeTab(atIndex: wc.addressBarAndTabsView?.currentTabIndex ?? -1)
     }
     
+    @IBAction func switchToNextTabMenuItemPressed(_ sender: NSMenuItem) {
+        guard let activeWindow = NSApplication.shared.keyWindow else { return }
+        guard let wc = activeWindow.windowController as? MKWindowController else { return }
+        guard let tabCount = wc.addressBarAndTabsView?.tabs.count, tabCount != 0 else { return }
+        guard let currentTabIndex = wc.addressBarAndTabsView?.currentTabIndex else { return }
+        wc.addressBarAndTabsView?.currentTabIndex = (currentTabIndex + 1) % tabCount
+    }
+    
+    @IBAction func switchToPreviousTabMenuItemPressed(_ sender: Any) {
+        guard let activeWindow = NSApplication.shared.keyWindow else { return }
+        guard let wc = activeWindow.windowController as? MKWindowController else { return }
+        guard let tabCount = wc.addressBarAndTabsView?.tabs.count, tabCount != 0 else { return }
+        guard let currentTabIndex = wc.addressBarAndTabsView?.currentTabIndex else { return }
+        wc.addressBarAndTabsView?.currentTabIndex = (currentTabIndex - 1 + tabCount) % tabCount
+    }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Insert code here to initialize your application
