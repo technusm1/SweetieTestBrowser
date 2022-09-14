@@ -122,10 +122,6 @@ class CompactAddressBarAndTabsView: NSView {
         self.tabContainerScrollView?.trailingAnchor.constraint(equalTo: self.trailingAnchor).isActive = true
         self.tabContainerScrollView?.contentView.trailingAnchor.constraint(equalTo: self.trailingAnchor).isActive = true
         
-        // Width of scrollbar contentview and scrollbar itself should be less than min(documentview, 0.4*self.width)
-        self.tabContainerScrollView?.trailingAnchor.constraint(equalTo: self.trailingAnchor).isActive = true
-        self.tabContainerScrollView?.contentView.trailingAnchor.constraint(equalTo: self.trailingAnchor).isActive = true
-        
         self.tabContainerScrollView?.widthAnchor.constraint(lessThanOrEqualTo: self.tabContainerScrollView!.documentView!.widthAnchor).isActive = true
         self.tabContainerScrollView?.contentView.widthAnchor.constraint(lessThanOrEqualTo: self.tabContainerScrollView!.documentView!.widthAnchor).isActive = true
         self.tabContainerScrollView?.widthAnchor.constraint(lessThanOrEqualTo: self.widthAnchor, multiplier: 0.6).isActive = true
@@ -143,18 +139,34 @@ class CompactAddressBarAndTabsView: NSView {
     }
     
     private func layoutTabs() {
+        print("Laying out \(self.tabs.count) tabs")
         var previousTabView: MKTabView? = nil
         // Clear all previous constraints on documentView
         self.tabContainerScrollView?.documentView?.removeConstraints(self.tabContainerScrollView?.documentView?.constraints ?? [])
         
         // Init constraints - always setup
         self.tabContainerScrollView?.documentView?.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
-        
+        if self.tabs.count < 12 {
+//            self.removeConstraints(self.constraints.filter { $0.identifier == "ExpansionConstraint" } ?? [])
+            let compactConstraint = self.tabContainerScrollView?.documentView?.widthAnchor.constraint(lessThanOrEqualTo: self.widthAnchor, multiplier: 0.6, constant: -5)
+            compactConstraint?.identifier = "CompactConstraint"
+            compactConstraint?.isActive = true
+        } else {
+            self.removeConstraints(self.constraints.filter { $0.identifier == "CompactConstraint" } ?? [])
+//            let expansionConstraint = self.tabContainerScrollView?.documentView?.widthAnchor.constraint(greaterThanOrEqualTo: self.widthAnchor, multiplier: 0.6)
+//            expansionConstraint?.identifier = "ExpansionConstraint"
+//            expansionConstraint?.isActive = true
+        }
+        self.removeConstraints(self.constraints.filter {
+            Set(["HeightConstraint", "CenterYConstraint", "LeadingAnchorConstraint", "WidthAnchorConstraint1", "WidthAnchorConstraint2", "WidthAnchorConstraint3", "WidthConstraint4"]).contains($0.identifier)
+        })
+        var counter = 0
         for tabView in self.tabs {
+            counter += 1
             tabView.removeConstraints(tabView.constraints.filter {
-                Set(["HeightConstraint", "CenterYConstraint", "LeadingAnchorConstraint", "WidthAnchorConstraint"]).contains($0.identifier)
+                Set(["HeightConstraint", "CenterYConstraint", "LeadingAnchorConstraint", "WidthAnchorConstraint1", "WidthAnchorConstraint2", "WidthAnchorConstraint3", "WidthConstraint4"]).contains($0.identifier)
             })
-            self.tabContainerScrollView?.documentView?.addSubview(tabView)
+            
             let heightConstraintForTab = tabView.heightAnchor.constraint(equalTo: self.heightAnchor)
             heightConstraintForTab.identifier = "HeightConstraint"
             heightConstraintForTab.isActive = true
@@ -164,12 +176,31 @@ class CompactAddressBarAndTabsView: NSView {
             let leadingAnchorConstraintForTab = tabView.leadingAnchor.constraint(equalTo: previousTabView?.trailingAnchor ?? self.tabContainerScrollView!.documentView!.leadingAnchor, constant: 5)
             leadingAnchorConstraintForTab.identifier = "LeadingAnchorConstraint"
             leadingAnchorConstraintForTab.isActive = true
-            let widthConstraintForTab = tabView.widthAnchor.constraint(equalToConstant: 120)
-            widthConstraintForTab.identifier = "WidthAnchorConstraint"
-            widthConstraintForTab.isActive = true
+            if counter < 12 {
+                let widthConstraintForTab = tabView.widthAnchor.constraint(lessThanOrEqualToConstant: 120)
+                widthConstraintForTab.identifier = "WidthAnchorConstraint1"
+                widthConstraintForTab.isActive = true
+                // For safety, we set the minimum width as x / 14, we need it to fill up the tabs
+                let widthConstraint2ForTab = tabView.widthAnchor.constraint(greaterThanOrEqualTo: self.widthAnchor, multiplier: 0.6/14)
+                widthConstraint2ForTab.identifier = "WidthAnchorConstraint2"
+                widthConstraint2ForTab.isActive = true
+            } else {
+                let widthConstraint2ForTab = tabView.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 0.6/14)
+                widthConstraint2ForTab.identifier = "WidthAnchorConstraint4"
+                widthConstraint2ForTab.isActive = true
+            }
+            if let previousTab = previousTabView {
+                let widthConstraint3ForTab = tabView.widthAnchor.constraint(equalTo: previousTab.widthAnchor)
+                widthConstraint3ForTab.identifier = "WidthAnchorConstraint3"
+                widthConstraint3ForTab.isActive = true
+            }
             previousTabView = tabView
         }
-        self.tabContainerScrollView?.documentView?.trailingAnchor.constraint(equalTo: previousTabView?.trailingAnchor ?? self.tabContainerScrollView!.documentView!.leadingAnchor).isActive = true
+        if self.tabs.count < 12 {
+            self.tabContainerScrollView?.documentView?.trailingAnchor.constraint(equalTo: previousTabView?.trailingAnchor ?? self.tabContainerScrollView!.documentView!.leadingAnchor).isActive = true
+        } else {
+            self.tabContainerScrollView?.documentView?.trailingAnchor.constraint(equalTo: previousTabView?.trailingAnchor ?? self.tabContainerScrollView!.documentView!.leadingAnchor).isActive = true
+        }
     }
     
     func goForward() {
@@ -199,6 +230,7 @@ class CompactAddressBarAndTabsView: NSView {
         if let url = url {
             view2.navigateTo(url)
         }
+        self.tabContainerScrollView?.documentView?.addSubview(view2)
         layoutTabs()
         currentTabIndex = tabs.count - 1
     }
