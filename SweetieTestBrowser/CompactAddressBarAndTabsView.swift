@@ -211,9 +211,9 @@ class CompactAddressBarAndTabsView: NSView {
         for i in index..<self.tabs.count {
             self.tabs[i].tag -= 1
         }
+        self.currentTabIndex -= 1
         self.delegate?.addressBarAndTabView(tabRemoved: tabToClose, atIndex: index)
         self.layoutTabs()
-        self.currentTabIndex -= 1
         if self.currentTabIndex < 0 && !self.tabs.isEmpty { self.currentTabIndex = 0 }
     }
     
