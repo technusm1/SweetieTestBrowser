@@ -178,13 +178,16 @@ class MKTabView: NSView {
     }
     
     override func draw(_ dirtyRect: NSRect) {
+        wantsLayer = true
         layer?.cornerRadius = 4
+        layer?.borderColor = NSColor.lightGray.cgColor
+        layer?.borderWidth = 1
         if isSelected {
             layer?.backgroundColor = NSColor.lightGray.blended(withFraction: 0.1, of: .white)?.cgColor
         } else if isMouseOverTheView {
-            layer?.backgroundColor = NSColor.lightGray.blended(withFraction: 0.3, of: .white)?.cgColor
+            layer?.backgroundColor = NSColor.lightGray.blended(withFraction: 0.5, of: .white)?.cgColor
         } else {
-            layer?.backgroundColor = NSColor.lightGray.blended(withFraction: 0.7, of: .white)?.cgColor
+            layer?.backgroundColor = NSColor.clear.cgColor
         }
         super.draw(dirtyRect)
     }
