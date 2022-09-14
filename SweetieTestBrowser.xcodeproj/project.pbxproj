@@ -13,6 +13,7 @@
 		4C08ED5528CB32040087E860 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4C08ED5428CB32040087E860 /* Assets.xcassets */; };
 		4C08ED5828CB32050087E860 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4C08ED5628CB32050087E860 /* Main.storyboard */; };
 		4C08ED6028CB323F0087E860 /* MKWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C08ED5F28CB323F0087E860 /* MKWindowController.swift */; };
+		4C1229D728D14F6000D82387 /* FaviconFinder in Frameworks */ = {isa = PBXBuildFile; productRef = 4C1229D628D14F6000D82387 /* FaviconFinder */; };
 		4C6C2D2D28CC5014005F7D4B /* CompactAddressBarAndTabsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C6C2D2C28CC5014005F7D4B /* CompactAddressBarAndTabsView.swift */; };
 		4C6C2D2F28CC50F5005F7D4B /* TabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C6C2D2E28CC50F5005F7D4B /* TabView.swift */; };
 /* End PBXBuildFile section */
@@ -35,6 +36,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C1229D728D14F6000D82387 /* FaviconFinder in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -89,6 +91,9 @@
 			dependencies = (
 			);
 			name = SweetieTestBrowser;
+			packageProductDependencies = (
+				4C1229D628D14F6000D82387 /* FaviconFinder */,
+			);
 			productName = SweetieTestBrowser;
 			productReference = 4C08ED4D28CB32030087E860 /* SweetieTestBrowser.app */;
 			productType = "com.apple.product-type.application";
@@ -117,6 +122,9 @@
 				Base,
 			);
 			mainGroup = 4C08ED4428CB32030087E860;
+			packageReferences = (
+				4C1229D528D14F6000D82387 /* XCRemoteSwiftPackageReference "FaviconFinder" */,
+			);
 			productRefGroup = 4C08ED4E28CB32030087E860 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -357,6 +365,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4C1229D528D14F6000D82387 /* XCRemoteSwiftPackageReference "FaviconFinder" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/will-lumley/FaviconFinder/";
+			requirement = {
+				kind = exactVersion;
+				version = 3.3.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4C1229D628D14F6000D82387 /* FaviconFinder */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4C1229D528D14F6000D82387 /* XCRemoteSwiftPackageReference "FaviconFinder" */;
+			productName = FaviconFinder;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 4C08ED4528CB32030087E860 /* Project object */;
 }

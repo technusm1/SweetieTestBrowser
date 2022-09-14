@@ -7,6 +7,7 @@
 
 import Foundation
 import WebKit
+import FaviconFinder
 
 class MKTabView: NSView {
     var isMouseOverTheView: Bool = false {
@@ -56,6 +57,18 @@ class MKTabView: NSView {
         if !url.isEmpty && url.isValidURL {
             self.currentURL = url
             self.webView.load(URLRequest(url: URL(string: url) ?? URL(string: "https://kagi.com")!))
+            FaviconFinder(url: URL(string: url) ?? URL(string: "https://kagi.com")!).downloadFavicon { result in
+                switch result {
+                case .success(let favicon):
+                    print("URL of Favicon: \(favicon.url)")
+                    DispatchQueue.main.async {
+                        self.favIconImageView.image = favicon.image
+                    }
+
+                case .failure(let error):
+                    print("Error: \(error)")
+                }
+            }
         }
     }
     
@@ -128,18 +141,19 @@ class MKTabView: NSView {
         self.favIconImageView = NSImageView()
         self.favIconImageView.translatesAutoresizingMaskIntoConstraints = false
         self.favIconImageView.image = favIcon ?? NSImage(named: NSImage.bookmarksTemplateName)!
+        self.favIconImageView.imageScaling = .scaleProportionallyDown
         addSubview(self.favIconImageView)
         
         // Setup constraints for controls
         self.favIconImageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 4).isActive = true
         self.favIconImageView.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
-        self.favIconImageView.widthAnchor.constraint(lessThanOrEqualToConstant: 32).isActive = true
-        self.favIconImageView.heightAnchor.constraint(lessThanOrEqualToConstant: 32).isActive = true
+        self.favIconImageView.widthAnchor.constraint(lessThanOrEqualToConstant: 16).isActive = true
+        self.favIconImageView.heightAnchor.constraint(lessThanOrEqualToConstant: 16).isActive = true
         
         closeBtn.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 4).isActive = true
         closeBtn.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
-        closeBtn.widthAnchor.constraint(lessThanOrEqualToConstant: 32).isActive = true
-        closeBtn.heightAnchor.constraint(lessThanOrEqualToConstant: 32).isActive = true
+        closeBtn.widthAnchor.constraint(lessThanOrEqualToConstant: 16).isActive = true
+        closeBtn.heightAnchor.constraint(lessThanOrEqualToConstant: 16).isActive = true
         
         self.titleLabel.leadingAnchor.constraint(equalTo: self.closeBtn.trailingAnchor, constant: 4).isActive = true
         self.titleLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -4).isActive = true
