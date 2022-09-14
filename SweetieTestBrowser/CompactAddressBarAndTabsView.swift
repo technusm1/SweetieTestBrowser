@@ -22,6 +22,7 @@ class CompactAddressBarAndTabsView: NSView {
     
     var tabContainerScrollView: NSScrollView?
     var tabs: [MKTabView]
+    var tabAnimationDuration: TimeInterval = 0.2
     var temporaryConstraintsStorage: [NSLayoutConstraint] = []
     var currentTabIndex: Int = -1 {
         didSet {
@@ -62,6 +63,8 @@ class CompactAddressBarAndTabsView: NSView {
     }
     
     private func setupView() {
+        self.wantsLayer = true
+        
         self.addressBarAndSearchField.placeholderString = "Enter a URL, or search something..."
         self.addressBarAndSearchField.target = self
         self.addressBarAndSearchField.action = #selector(loadURL(_:))
@@ -69,6 +72,7 @@ class CompactAddressBarAndTabsView: NSView {
         self.addressBarAndSearchField.maximumRecents = 10
         self.addressBarAndSearchField.sendsWholeSearchString = true
         self.addressBarAndSearchField.sendsSearchStringImmediately = false
+        self.addressBarAndSearchField.wantsLayer = true
         
         addSubview(self.addressBarAndSearchField)
         
@@ -99,11 +103,13 @@ class CompactAddressBarAndTabsView: NSView {
         addSubview(self.tabContainerScrollView!)
         
         let clipView = NSClipView()
+        clipView.wantsLayer = true
         clipView.translatesAutoresizingMaskIntoConstraints = false
         clipView.drawsBackground = false
         self.tabContainerScrollView?.contentView = clipView
         
         let documentView = NSView()
+        documentView.wantsLayer = true
         documentView.translatesAutoresizingMaskIntoConstraints = false
         self.tabContainerScrollView?.documentView = documentView
         
@@ -163,6 +169,7 @@ class CompactAddressBarAndTabsView: NSView {
         var counter = 0
         for tabView in self.tabs {
             counter += 1
+            
             tabView.removeConstraints(tabView.constraints.filter {
                 Set(["HeightConstraint", "CenterYConstraint", "LeadingAnchorConstraint", "WidthAnchorConstraint1", "WidthAnchorConstraint2", "WidthAnchorConstraint3", "WidthConstraint4"]).contains($0.identifier)
             })
@@ -180,7 +187,7 @@ class CompactAddressBarAndTabsView: NSView {
             
             if counter == currentTabIndex + 1 {
                 let widthConstraintForTab = tabView.widthAnchor.constraint(equalToConstant: 120)
-                widthConstraintForTab.isActive = true
+                widthConstraintForTab.animator().isActive = true
                 temporaryConstraintsStorage.append(widthConstraintForTab)
                 previousTabView = tabView
                 continue
@@ -195,30 +202,42 @@ class CompactAddressBarAndTabsView: NSView {
             if counter < 12 {
                 let widthConstraintForTab = tabView.widthAnchor.constraint(lessThanOrEqualToConstant: 120)
                 widthConstraintForTab.identifier = "WidthAnchorConstraint1"
-                widthConstraintForTab.isActive = true
+                widthConstraintForTab.animator().isActive = true
                 // For safety, we set the minimum width as x / 14, we need it to fill up the tabs
                 let widthConstraint2ForTab = tabView.widthAnchor.constraint(greaterThanOrEqualTo: self.widthAnchor, multiplier: 0.6/20)
                 widthConstraint2ForTab.identifier = "WidthAnchorConstraint2"
-                widthConstraint2ForTab.isActive = true
+                widthConstraint2ForTab.animator().isActive = true
                 temporaryConstraintsStorage.append(widthConstraintForTab)
                 temporaryConstraintsStorage.append(widthConstraint2ForTab)
             } else {
                 let widthConstraint4ForTab = tabView.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 0.6/20)
                 widthConstraint4ForTab.identifier = "WidthAnchorConstraint4"
-                widthConstraint4ForTab.isActive = true
+                widthConstraint4ForTab.animator().isActive = true
                 temporaryConstraintsStorage.append(widthConstraint4ForTab)
             }
             if let previousTab = previousTabView {
                 let widthConstraint3ForTab = tabView.widthAnchor.constraint(equalTo: previousTab.widthAnchor)
                 widthConstraint3ForTab.identifier = "WidthAnchorConstraint3"
-                widthConstraint3ForTab.isActive = true
+                widthConstraint3ForTab.animator().isActive = true
                 temporaryConstraintsStorage.append(widthConstraint3ForTab)
             }
-            
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = self.tabAnimationDuration
+                context.allowsImplicitAnimation = true
+                self.layoutSubtreeIfNeeded()
+                self.tabContainerScrollView?.contentView.layoutSubtreeIfNeeded()
+                self.tabContainerScrollView?.documentView?.layoutSubtreeIfNeeded()
+            }
             previousTabView = tabView
         }
-        self.tabContainerScrollView?.documentView?.trailingAnchor.constraint(equalTo: previousTabView?.trailingAnchor ?? self.tabContainerScrollView!.documentView!.leadingAnchor).isActive = true
-        self.layoutSubtreeIfNeeded()
+        self.tabContainerScrollView?.documentView?.trailingAnchor.constraint(equalTo: previousTabView?.trailingAnchor ?? self.tabContainerScrollView!.documentView!.leadingAnchor).animator().isActive = true
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = self.tabAnimationDuration
+            context.allowsImplicitAnimation = true
+            self.layoutSubtreeIfNeeded()
+            self.tabContainerScrollView?.contentView.layoutSubtreeIfNeeded()
+            self.tabContainerScrollView?.documentView?.layoutSubtreeIfNeeded()
+        }
     }
     
     func goForward() {
