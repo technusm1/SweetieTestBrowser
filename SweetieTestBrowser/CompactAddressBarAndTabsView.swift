@@ -193,13 +193,7 @@ class CompactAddressBarAndTabsView: NSView {
             self.currentTabIndex = view2.tag
         }
         view2.onClose = {
-            self.tabs.remove(at: view2.tag)
-            for i in view2.tag..<self.tabs.count {
-                self.tabs[i].tag -= 1
-            }
-            self.currentTabIndex -= 1
-            self.delegate?.addressBarAndTabView(tabRemoved: view2, atIndex: view2.tag)
-            self.layoutTabs()
+            self.closeTab(atIndex: view2.tag)
         }
         self.tabs.append(view2)
         if let url = url {
@@ -207,6 +201,19 @@ class CompactAddressBarAndTabsView: NSView {
         }
         currentTabIndex = tabs.count - 1
         layoutTabs()
+    }
+    
+    func closeTab(atIndex index: Int) {
+        guard index >= 0 else { return }
+        let tabToClose = self.tabs[index]
+        self.tabs.remove(at: index)
+        for i in index..<self.tabs.count {
+            self.tabs[i].tag -= 1
+        }
+        self.currentTabIndex -= 1
+        if self.currentTabIndex < 0 && !self.tabs.isEmpty { self.currentTabIndex = 0 }
+        self.delegate?.addressBarAndTabView(tabRemoved: tabToClose, atIndex: index)
+        self.layoutTabs()
     }
     
     @objc func loadURL(_ sender: NSSearchField) {

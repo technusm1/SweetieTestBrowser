@@ -197,6 +197,7 @@ extension MKTabView: WKNavigationDelegate{
         }
         self.toolTip = webView.title ?? self.title
         self.currentURL = webView.url?.absoluteString ?? ""
+        print(self.currentURL, self.title)
         if isSelected {
             let searchField = self.window?.toolbar?.items.first { toolbarItem in
                 toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
