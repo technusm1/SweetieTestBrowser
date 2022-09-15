@@ -5,7 +5,21 @@ A barebones working browser, created as part of a recruitment challenge that mee
 - Created using Swift / AppKit.
 
 ## Features
-- Customizable toolbar.
+- Tab support: Open links in tabs via context menu, Cmd + click etc.
+- Compact tabs as given in spec.
+- Just a barebones browser that works.
+- Nice animations.
+- `target=_blank` links supported.
+- File selection and upload supported.
+
+## Limitations
+- Toolbar is not customizable.
+- Basically any features one would expect from a modern web browser, including downloading, multi-window support and tab shifting, haven't been implemented yet. I have a mind to incorporate the downloading part using another one of my projects: MK-Downloader, but its written in SwiftUI (the challenge required AppKit).
+- 
 
 ## Implemention details
-- The app components are laid out using Auto Layout, because doing UI development without it is a recipe for a headache. In the words of Paul Hudson, there are only two kinds of people - those who use auto-layout, and those who waste time. So, keeping that in mind, all views have `translatesAutoresizingMaskIntoConstraints` set to `false`, and constraints are properly defined for each one. This allows to handle things like window resizing properly, out of the box and reliably handles all UI adjustment.
+- The app components are laid out using Auto Layout for most part, because it simplifies things. All views have `translatesAutoresizingMaskIntoConstraints` set to `false`, and constraints are properly defined for each one. This allows to handle things like window resizing properly, out of the box and reliably handles all UI adjustment, including animations.
+
+## Credits
+- [FaviconFinder](https://github.com/will-lumley/FaviconFinder/) library is used to asynchronously fetch FavIcon for a website and display it on tab. The app uses v3.3.0 of this library since it is compatible with macOS 10.14.
+- [Customize the contextual menu of WKWebView on macOS - iCab Blog](https://icab.de/blog/2022/06/12/customize-the-contextual-menu-of-wkwebview-on-macos/)
