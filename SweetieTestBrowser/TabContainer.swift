@@ -275,6 +275,7 @@ extension MKTabView: WKNavigationDelegate, WKUIDelegate {
             }
             compactAddressBar.createNewTab(url: navigationAction.request.url?.absoluteString)
             decisionHandler(.cancel)
+            return
         }
         decisionHandler(.allow)
     }
