@@ -10,6 +10,24 @@ import WebKit
 import FaviconFinder
 
 class MKTabView: NSView {
+    var compactMode: Bool = false {
+        didSet {
+            if compactMode {
+                self.favIconLeadingConstraint?.isActive = false
+                self.favIconCenteringConstraint?.isActive = true
+                titleLabel.removeFromSuperview()
+            } else {
+                self.favIconLeadingConstraint?.isActive = true
+                self.favIconCenteringConstraint?.isActive = false
+                addSubview(titleLabel)
+                self.titleLabel.leadingAnchor.constraint(equalTo: self.closeBtn.trailingAnchor, constant: 4).isActive = true
+                self.titleLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -4).isActive = true
+                self.titleLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
+            }
+        }
+    }
+    var favIconLeadingConstraint: NSLayoutConstraint?
+    var favIconCenteringConstraint: NSLayoutConstraint?
     var isMouseOverTheView: Bool = false {
         didSet {
             closeBtn.isHidden = !isMouseOverTheView
@@ -172,7 +190,11 @@ class MKTabView: NSView {
         addSubview(self.favIconImageView)
         
         // Setup constraints for controls
-        self.favIconImageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 4).isActive = true
+        self.favIconLeadingConstraint = self.favIconImageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 4)
+        self.favIconLeadingConstraint?.isActive = true
+        self.favIconCenteringConstraint = self.favIconImageView.centerXAnchor.constraint(equalTo: self.centerXAnchor)
+        self.favIconCenteringConstraint?.isActive = false
+        
         self.favIconImageView.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
         self.favIconImageView.widthAnchor.constraint(lessThanOrEqualToConstant: 16).isActive = true
         self.favIconImageView.heightAnchor.constraint(lessThanOrEqualToConstant: 16).isActive = true
@@ -232,5 +254,10 @@ extension MKTabView: WKNavigationDelegate{
             compactAddressBarAndTabsView?.btnReload.isHidden = false
             compactAddressBarAndTabsView?.btnStopLoad.isHidden = true
         }
+    }
+    
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        print("Web view failed navigation")
+        // webView.loadFileURL(<#T##URL: URL##URL#>, allowingReadAccessTo: <#T##URL#>)
     }
 }

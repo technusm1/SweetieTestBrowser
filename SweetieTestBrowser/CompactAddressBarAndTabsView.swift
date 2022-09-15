@@ -171,7 +171,11 @@ class CompactAddressBarAndTabsView: NSView {
         var counter = 0
         for tabView in self.tabs {
             counter += 1
-            
+            if self.tabs.count >= 6 {
+                tabView.compactMode = true
+            } else {
+                tabView.compactMode = false
+            }
             tabView.removeConstraints(tabView.constraints.filter {
                 Set(["HeightConstraint", "CenterYConstraint", "LeadingAnchorConstraint", "WidthAnchorConstraint1", "WidthAnchorConstraint2", "WidthAnchorConstraint3", "WidthConstraint4"]).contains($0.identifier)
             })
@@ -188,6 +192,7 @@ class CompactAddressBarAndTabsView: NSView {
             temporaryConstraintsStorage.append(leadingAnchorConstraintForTab)
             
             if counter == currentTabIndex + 1 {
+                tabView.compactMode = false
                 let widthConstraintForTab = tabView.widthAnchor.constraint(equalToConstant: 120)
                 widthConstraintForTab.animator().isActive = true
                 temporaryConstraintsStorage.append(widthConstraintForTab)

@@ -17,6 +17,7 @@ class MKWindowController: NSWindowController {
         self.window?.backgroundColor = .windowBackgroundColor
         super.windowDidLoad()
         let minSize = NSSize(width: 570, height: 220)
+        self.window?.minSize = minSize
         
         if let mainWindow = self.window, mainWindow.frame.width < minSize.width || mainWindow.frame.height < minSize.height {
             var frameRect = mainWindow.frame
