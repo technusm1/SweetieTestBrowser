@@ -5,7 +5,7 @@ A barebones working browser, created as part of a recruitment challenge that mee
 - Created using Swift / AppKit.
 
 ## Features
-- Tab support: Open links in tabs via context menu, Cmd + click etc.
+- Tab support: Open links in tabs via context menu, Cmd + click to open a background tab etc.
 - Compact tabs as given in spec.
 - Just a barebones browser that works.
 - Nice animations.
