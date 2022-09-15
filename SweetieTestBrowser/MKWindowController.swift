@@ -41,8 +41,8 @@ class MKWindowController: NSWindowController {
         let toolbar = NSToolbar(identifier: .mainWindowToolbarIdentifier)
         toolbar.delegate = self
         
-        toolbar.allowsUserCustomization = true
-        toolbar.autosavesConfiguration = true
+        toolbar.allowsUserCustomization = false
+        toolbar.autosavesConfiguration = false
         toolbar.centeredItemIdentifier = .searchBarAndTabStripIdentifier
         
         window.title = "Sweet Browser"
