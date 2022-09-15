@@ -273,7 +273,7 @@ extension MKTabView: WKNavigationDelegate, WKUIDelegate {
                 decisionHandler(.allow)
                 return
             }
-            compactAddressBar.createNewTab(url: navigationAction.request.url?.absoluteString)
+            compactAddressBar.createNewBackgroundTab(url: navigationAction.request.url?.absoluteString)
             decisionHandler(.cancel)
             return
         }
@@ -289,7 +289,6 @@ extension MKTabView: WKNavigationDelegate, WKUIDelegate {
             }
             return nil
         }
-        
         
         if navigationAction.targetFrame == nil {
             // Open in new tab

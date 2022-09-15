@@ -260,22 +260,10 @@ class CompactAddressBarAndTabsView: NSView {
         self.addressBarAndSearchField.stringValue = self.tabs[currentTabIndex].webView.url?.absoluteString ?? ""
     }
     
-    func createNewTab(withWebView webView: MKWebView) {
-        print("called createNewTab")
-        let view2 = MKTabView(frame: .zero, webView: webView)
-        view2.translatesAutoresizingMaskIntoConstraints = false
-        view2.tag = tabs.count
-        view2.onSelect = {
-            self.currentTabIndex = view2.tag
-        }
-        view2.onClose = {
-            self.closeTab(atIndex: view2.tag)
-        }
-        self.tabs.append(view2)
-        view2.currentURL = webView.url?.absoluteString ?? ""
-        self.tabContainerScrollView?.documentView?.addSubview(view2)
-//        layoutTabs()
-        currentTabIndex = tabs.count - 1
+    func createNewBackgroundTab(url: String?) {
+        let callerTab = currentTabIndex
+        createNewTab(url: url)
+        currentTabIndex = callerTab
     }
     
     func createNewTab(url: String?) {
