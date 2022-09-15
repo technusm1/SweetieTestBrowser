@@ -71,8 +71,8 @@ class MKTabView: NSView {
     
     // currentURL will be set by the delegate
     var currentURL: String = ""
-    var _webView: WKWebView?
-    var webView: WKWebView!
+    var _webView: MKWebView?
+    var webView: MKWebView!
     
     func navigateTo(_ url: String) {
         if !url.isEmpty && url.isValidURL {
@@ -91,7 +91,7 @@ class MKTabView: NSView {
                     DispatchQueue.main.async {
                         self.favIconImageView.image = favicon.image
                     }
-
+                    
                 case .failure(let error):
                     print("Error: \(error)")
                 }
@@ -108,7 +108,7 @@ class MKTabView: NSView {
         isMouseOverTheView = true
         Self.currentlyHoveredTabView = self
     }
-
+    
     public override func mouseExited(with event: NSEvent) {
         isMouseOverTheView = false
         Self.currentlyHoveredTabView = nil
@@ -149,14 +149,14 @@ class MKTabView: NSView {
     
     private func setupTabView() {
         // Setup an empty webview
-        self.webView = self._webView ?? WKWebView()
+        self.webView = self._webView ?? MKWebView()
         self.webView.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
         self.webView.translatesAutoresizingMaskIntoConstraints = false
         self.webView.navigationDelegate = self
         self.webView.uiDelegate = self
         self.webView.allowsBackForwardNavigationGestures = true
-        self.webView.addObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), options: .new, context: nil)
-        self.webView.addObserver(self, forKeyPath: #keyPath(WKWebView.title), options: .new, context: nil)
+        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.estimatedProgress), options: .new, context: nil)
+        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.title), options: .new, context: nil)
         
         // Init close btn
         closeBtn.target = self
@@ -206,7 +206,7 @@ class MKTabView: NSView {
         self.titleLabel.leadingAnchor.constraint(equalTo: self.closeBtn.trailingAnchor, constant: 4).isActive = true
         self.titleLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -4).isActive = true
         self.titleLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
-//        titleLabel.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
+        //        titleLabel.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
     }
     
     required init?(coder: NSCoder) {
@@ -219,7 +219,7 @@ class MKTabView: NSView {
         setupTabView()
     }
     
-    init(frame frameRect: NSRect, webView: WKWebView) {
+    init(frame frameRect: NSRect, webView: MKWebView) {
         super.init(frame: frameRect)
         self._webView = webView
         setupTabView()
@@ -266,12 +266,35 @@ extension MKTabView: WKNavigationDelegate, WKUIDelegate {
         // webView.loadFileURL(<#T##URL: URL##URL#>, allowingReadAccessTo: <#T##URL#>)
     }
     
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        if navigationAction.modifierFlags == .command {
+            // user cmd + clicked a link, open in new tab
+            guard let compactAddressBar = self.window?.toolbar?.items.first(where: { $0.itemIdentifier == .searchBarAndTabStripIdentifier })?.view as? CompactAddressBarAndTabsView else {
+                decisionHandler(.allow)
+                return
+            }
+            compactAddressBar.createNewTab(url: navigationAction.request.url?.absoluteString)
+            decisionHandler(.cancel)
+        }
+        decisionHandler(.allow)
+    }
+    
     func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
         print("something here", navigationAction.request)
+        if let customAction = (webView as? MKWebView)?.contextMenuAction {
+            if customAction == .openInNewTab {
+                guard let compactAddressBar = self.window?.toolbar?.items.first(where: { $0.itemIdentifier == .searchBarAndTabStripIdentifier })?.view as? CompactAddressBarAndTabsView else { return nil }
+                compactAddressBar.createNewTab(url: navigationAction.request.url?.absoluteString)
+            }
+            return nil
+        }
+        
+        
         if navigationAction.targetFrame == nil {
             // Open in new tab
             guard let compactAddressBar = self.window?.toolbar?.items.first(where: { $0.itemIdentifier == .searchBarAndTabStripIdentifier })?.view as? CompactAddressBarAndTabsView else { return nil }
             compactAddressBar.createNewTab(url: navigationAction.request.url?.absoluteString)
+            return nil
         }
         return nil
     }

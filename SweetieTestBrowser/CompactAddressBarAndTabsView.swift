@@ -260,7 +260,7 @@ class CompactAddressBarAndTabsView: NSView {
         self.addressBarAndSearchField.stringValue = self.tabs[currentTabIndex].webView.url?.absoluteString ?? ""
     }
     
-    func createNewTab(withWebView webView: WKWebView) {
+    func createNewTab(withWebView webView: MKWebView) {
         print("called createNewTab")
         let view2 = MKTabView(frame: .zero, webView: webView)
         view2.translatesAutoresizingMaskIntoConstraints = false
