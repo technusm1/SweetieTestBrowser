@@ -41,6 +41,8 @@ class CompactAddressBarAndTabsView: NSView {
                 return
             }
             self.addressBarAndSearchField.stringValue = tabs[currentTabIndex].currentURL
+            let wc = self.window?.windowController as? MKWindowController
+            wc?.titlebarAccessoryViewController?.isHidden = true
             delegate?.addressBarAndTabView(didSelectTab: tabs[currentTabIndex], atIndex: currentTabIndex, fromIndex: oldValue)
         }
     }

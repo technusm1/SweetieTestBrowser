@@ -475,5 +475,32 @@ GQ
             </objects>
             <point key="canvasLocation" x="75" y="655"/>
         </scene>
+        <!--Progress Indicator Titlebar Accessory View Controller-->
+        <scene sceneID="mD9-8o-5hk">
+            <objects>
+                <viewController storyboardIdentifier="ProgressIndicatorTitlebarAccessoryViewController" id="bxQ-c0-n6A" customClass="ProgressIndicatorTitlebarAccessoryViewController" customModule="SweetieTestBrowser" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="g67-ho-cZC">
+                        <rect key="frame" x="0.0" y="0.0" width="450" height="0.0"/>
+                        <subviews>
+                            <progressIndicator maxValue="100" doubleValue="50" controlSize="small" style="bar" translatesAutoresizingMaskIntoConstraints="NO" id="oJT-Lw-PSa">
+                                <rect key="frame" x="0.0" y="0.0" width="450" height="12"/>
+                            </progressIndicator>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="oJT-Lw-PSa" firstAttribute="leading" secondItem="g67-ho-cZC" secondAttribute="leading" id="1Zu-xq-jRR"/>
+                            <constraint firstItem="oJT-Lw-PSa" firstAttribute="width" secondItem="g67-ho-cZC" secondAttribute="width" id="Ufp-Es-Kyu"/>
+                            <constraint firstItem="oJT-Lw-PSa" firstAttribute="height" secondItem="g67-ho-cZC" secondAttribute="height" id="eZ1-nE-lfF"/>
+                            <constraint firstItem="oJT-Lw-PSa" firstAttribute="centerY" secondItem="g67-ho-cZC" secondAttribute="centerY" id="ngr-q3-6yI"/>
+                            <constraint firstAttribute="trailing" secondItem="oJT-Lw-PSa" secondAttribute="trailing" id="rMm-Eo-eKO"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="progressIndicator" destination="oJT-Lw-PSa" id="vmF-t5-6f4"/>
+                    </connections>
+                </viewController>
+                <customObject id="Hq7-xW-QVw" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="100" y="-273"/>
+        </scene>
     </scenes>
 </document>

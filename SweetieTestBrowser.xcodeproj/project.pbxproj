@@ -15,7 +15,7 @@
 		4C08ED6028CB323F0087E860 /* MKWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C08ED5F28CB323F0087E860 /* MKWindowController.swift */; };
 		4C1229D728D14F6000D82387 /* FaviconFinder in Frameworks */ = {isa = PBXBuildFile; productRef = 4C1229D628D14F6000D82387 /* FaviconFinder */; };
 		4C6C2D2D28CC5014005F7D4B /* CompactAddressBarAndTabsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C6C2D2C28CC5014005F7D4B /* CompactAddressBarAndTabsView.swift */; };
-		4C6C2D2F28CC50F5005F7D4B /* TabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C6C2D2E28CC50F5005F7D4B /* TabView.swift */; };
+		4CCDDE8E28D2CED50091F7F7 /* ProgressIndicatorTitlebarAccessoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCDDE8D28D2CED50091F7F7 /* ProgressIndicatorTitlebarAccessoryViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,7 +28,7 @@
 		4C08ED5928CB32050087E860 /* SweetieTestBrowser.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SweetieTestBrowser.entitlements; sourceTree = "<group>"; };
 		4C08ED5F28CB323F0087E860 /* MKWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKWindowController.swift; sourceTree = "<group>"; };
 		4C6C2D2C28CC5014005F7D4B /* CompactAddressBarAndTabsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompactAddressBarAndTabsView.swift; sourceTree = "<group>"; };
-		4C6C2D2E28CC50F5005F7D4B /* TabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabView.swift; sourceTree = "<group>"; };
+		4CCDDE8D28D2CED50091F7F7 /* ProgressIndicatorTitlebarAccessoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressIndicatorTitlebarAccessoryViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,9 +67,9 @@
 				4C08ED5228CB32030087E860 /* ViewController.swift */,
 				4C08ED5428CB32040087E860 /* Assets.xcassets */,
 				4C08ED5628CB32050087E860 /* Main.storyboard */,
+				4CCDDE8D28D2CED50091F7F7 /* ProgressIndicatorTitlebarAccessoryViewController.swift */,
 				4C08ED5F28CB323F0087E860 /* MKWindowController.swift */,
 				4C6C2D2C28CC5014005F7D4B /* CompactAddressBarAndTabsView.swift */,
-				4C6C2D2E28CC50F5005F7D4B /* TabView.swift */,
 				4C08ED5928CB32050087E860 /* SweetieTestBrowser.entitlements */,
 			);
 			path = SweetieTestBrowser;
@@ -151,8 +151,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4C6C2D2F28CC50F5005F7D4B /* TabView.swift in Sources */,
 				4C08ED5328CB32030087E860 /* ViewController.swift in Sources */,
+				4CCDDE8E28D2CED50091F7F7 /* ProgressIndicatorTitlebarAccessoryViewController.swift in Sources */,
 				4C08ED5128CB32030087E860 /* AppDelegate.swift in Sources */,
 				4C01D44E28CF4995007CC3B4 /* TabContainer.swift in Sources */,
 				4C08ED6028CB323F0087E860 /* MKWindowController.swift in Sources */,

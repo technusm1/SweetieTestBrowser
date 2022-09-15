@@ -10,6 +10,7 @@ import Cocoa
 class MKWindowController: NSWindowController {
     
     var addressBarAndTabsView: CompactAddressBarAndTabsView?
+    var titlebarAccessoryViewController: ProgressIndicatorTitlebarAccessoryViewController?
 
     override func windowDidLoad() {
         self.window?.setFrameAutosaveName("MKMainWindow")
@@ -30,6 +31,7 @@ class MKWindowController: NSWindowController {
                 subView is NSSearchField
             }
         )
+        configureTitlebarAccessoryView()
     }
     
     func configureToolbar() {
@@ -182,6 +184,19 @@ extension MKWindowController: NSWindowDelegate {
                 widthConst?.isActive = true
                 widthConst?.identifier = "SearchbarWidthConst"
             }
+        }
+    }
+}
+
+extension MKWindowController {
+    private func configureTitlebarAccessoryView()
+    {
+        if  let titlebarController = self.storyboard?.instantiateController(withIdentifier: NSStoryboard.SceneIdentifier("ProgressIndicatorTitlebarAccessoryViewController")) as? ProgressIndicatorTitlebarAccessoryViewController {
+            titlebarController.layoutAttribute = .bottom
+            titlebarController.fullScreenMinHeight = titlebarController.view.bounds.height
+            self.window?.addTitlebarAccessoryViewController(titlebarController)
+            self.titlebarAccessoryViewController = titlebarController
+            self.titlebarAccessoryViewController?.isHidden = true
         }
     }
 }

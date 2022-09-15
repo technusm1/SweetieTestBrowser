@@ -113,14 +113,33 @@ class MKTabView: NSView {
         }
     }
     
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if keyPath == "estimatedProgress" && isSelected {
+            guard let wc = self.window?.windowController as? MKWindowController else { return }
+            wc.titlebarAccessoryViewController?.progressIndicator.isIndeterminate = false
+            if webView.estimatedProgress.isEqual(to: 1.0) {
+                wc.titlebarAccessoryViewController?.isHidden = true
+            } else {
+                wc.titlebarAccessoryViewController?.isHidden = false
+            }
+            wc.titlebarAccessoryViewController?.progressIndicator.doubleValue = webView.estimatedProgress * 100
+        } else if keyPath == "title" {
+            if let title = webView.title, !title.isEmpty {
+                self.title = title
+            }
+            self.toolTip = webView.title ?? self.title
+        }
+    }
+    
     private func setupTabView() {
         // Setup an empty webview
         self.webView = WKWebView()
-        self.webView.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
-                "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15"
+        self.webView.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Safari/605.1.15"
         self.webView.translatesAutoresizingMaskIntoConstraints = false
         self.webView.navigationDelegate = self
         self.webView.allowsBackForwardNavigationGestures = true
+        self.webView.addObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), options: .new, context: nil)
+        self.webView.addObserver(self, forKeyPath: #keyPath(WKWebView.title), options: .new, context: nil)
         
         // Init close btn
         closeBtn.target = self
@@ -197,10 +216,6 @@ class MKTabView: NSView {
 
 extension MKTabView: WKNavigationDelegate{
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        if let title = webView.title, !title.isEmpty {
-            self.title = title
-        }
-        self.toolTip = webView.title ?? self.title
         self.currentURL = webView.url?.absoluteString ?? ""
         print(self.currentURL, self.title)
         if isSelected {
