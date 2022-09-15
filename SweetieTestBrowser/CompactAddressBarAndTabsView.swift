@@ -300,6 +300,9 @@ class CompactAddressBarAndTabsView: NSView {
     
     func closeTab(atIndex index: Int) {
         guard index >= 0 else { return }
+        guard let wc = self.window?.windowController as? MKWindowController else { return }
+        wc.titlebarAccessoryViewController?.isHidden = true
+        
         let tabToClose = self.tabs[index]
         self.tabs.remove(at: index)
         self.tabContainerScrollView?.documentView?.subviews.remove(at: index)
