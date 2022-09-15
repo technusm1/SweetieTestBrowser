@@ -71,6 +71,7 @@ class MKTabView: NSView {
     
     // currentURL will be set by the delegate
     var currentURL: String = ""
+    var _webView: WKWebView?
     var webView: WKWebView!
     
     func navigateTo(_ url: String) {
@@ -148,10 +149,11 @@ class MKTabView: NSView {
     
     private func setupTabView() {
         // Setup an empty webview
-        self.webView = WKWebView()
+        self.webView = self._webView ?? WKWebView()
         self.webView.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Safari/605.1.15"
         self.webView.translatesAutoresizingMaskIntoConstraints = false
         self.webView.navigationDelegate = self
+        self.webView.uiDelegate = self
         self.webView.allowsBackForwardNavigationGestures = true
         self.webView.addObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), options: .new, context: nil)
         self.webView.addObserver(self, forKeyPath: #keyPath(WKWebView.title), options: .new, context: nil)
@@ -217,6 +219,12 @@ class MKTabView: NSView {
         setupTabView()
     }
     
+    init(frame frameRect: NSRect, webView: WKWebView) {
+        super.init(frame: frameRect)
+        self._webView = webView
+        setupTabView()
+    }
+    
     override func draw(_ dirtyRect: NSRect) {
         wantsLayer = true
         layer?.cornerRadius = 4
@@ -233,7 +241,7 @@ class MKTabView: NSView {
     }
 }
 
-extension MKTabView: WKNavigationDelegate{
+extension MKTabView: WKNavigationDelegate, WKUIDelegate {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         self.currentURL = webView.url?.absoluteString ?? ""
         print(self.currentURL, self.title)
@@ -256,5 +264,31 @@ extension MKTabView: WKNavigationDelegate{
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         print("Web view failed navigation")
         // webView.loadFileURL(<#T##URL: URL##URL#>, allowingReadAccessTo: <#T##URL#>)
+    }
+    
+    func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+        print("something here", navigationAction.request)
+        if navigationAction.targetFrame == nil {
+            // Open in new tab
+            guard let compactAddressBar = self.window?.toolbar?.items.first(where: { $0.itemIdentifier == .searchBarAndTabStripIdentifier })?.view as? CompactAddressBarAndTabsView else { return nil }
+            compactAddressBar.createNewTab(url: navigationAction.request.url?.absoluteString)
+        }
+        return nil
+    }
+    
+    func webView(_ webView: WKWebView, runOpenPanelWith parameters: WKOpenPanelParameters, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping ([URL]?) -> Void) {
+        print("Open a file upload panel")
+        let fpanel = NSOpenPanel()
+        
+        fpanel.allowsMultipleSelection = parameters.allowsMultipleSelection
+        fpanel.canChooseDirectories = parameters.allowsDirectories
+        fpanel.canChooseFiles = true
+        fpanel.canCreateDirectories = false
+        fpanel.begin { response in
+            if response == .OK {
+                completionHandler(fpanel.urls)
+            }
+        }
+        
     }
 }

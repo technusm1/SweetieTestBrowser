@@ -6,6 +6,7 @@
 //
 
 import Cocoa
+import WebKit
 
 protocol CompactAddressBarAndTabsViewDelegate {
     // This method is called when a tab switch happens, or when user enters a new URL in a tab
@@ -148,7 +149,7 @@ class CompactAddressBarAndTabsView: NSView {
         self.btnStopLoad.centerXAnchor.constraint(equalTo: self.btnReload.centerXAnchor).isActive = true
     }
     
-    private func layoutTabs() {
+    func layoutTabs() {
         print("Laying out \(self.tabs.count) tabs")
         var previousTabView: MKTabView? = nil
         // Clear all previous constraints on documentView
@@ -257,6 +258,24 @@ class CompactAddressBarAndTabsView: NSView {
         guard currentTabIndex >= 0 else { return }
         self.tabs[currentTabIndex].webView.goBack()
         self.addressBarAndSearchField.stringValue = self.tabs[currentTabIndex].webView.url?.absoluteString ?? ""
+    }
+    
+    func createNewTab(withWebView webView: WKWebView) {
+        print("called createNewTab")
+        let view2 = MKTabView(frame: .zero, webView: webView)
+        view2.translatesAutoresizingMaskIntoConstraints = false
+        view2.tag = tabs.count
+        view2.onSelect = {
+            self.currentTabIndex = view2.tag
+        }
+        view2.onClose = {
+            self.closeTab(atIndex: view2.tag)
+        }
+        self.tabs.append(view2)
+        view2.currentURL = webView.url?.absoluteString ?? ""
+        self.tabContainerScrollView?.documentView?.addSubview(view2)
+//        layoutTabs()
+        currentTabIndex = tabs.count - 1
     }
     
     func createNewTab(url: String?) {
