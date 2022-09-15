@@ -16,7 +16,7 @@ A barebones working browser, created as part of a recruitment challenge that mee
 - Basically any features one would expect from a modern web browser, including downloading, multi-window support and tab shifting, haven't been implemented yet. I have a mind to incorporate the downloading part using another one of my projects: MK-Downloader, but its written in SwiftUI (the challenge required AppKit).
 
 ## Installation
-- Download the latest version of the app (DMG) from this link:
+- Download the latest version of the app (DMG) from this link: https://github.com/technusm1/SweetieTestBrowser/releases/download/1.0-alpha1/SweetieTestBrowser.dmg
 - Open the DMG.
 - Drag the app into `Applications` folder (shortcut provided in DMG).
 
