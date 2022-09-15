@@ -294,7 +294,6 @@ class CompactAddressBarAndTabsView: NSView {
             view2.navigateTo(url)
         }
         self.tabContainerScrollView?.documentView?.addSubview(view2)
-//        layoutTabs()
         currentTabIndex = tabs.count - 1
     }
     

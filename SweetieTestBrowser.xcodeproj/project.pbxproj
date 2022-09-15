@@ -28,6 +28,7 @@
 		4C08ED5928CB32050087E860 /* SweetieTestBrowser.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SweetieTestBrowser.entitlements; sourceTree = "<group>"; };
 		4C08ED5F28CB323F0087E860 /* MKWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKWindowController.swift; sourceTree = "<group>"; };
 		4C6C2D2C28CC5014005F7D4B /* CompactAddressBarAndTabsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompactAddressBarAndTabsView.swift; sourceTree = "<group>"; };
+		4C7E492428D32F1B00780547 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4CCDDE8D28D2CED50091F7F7 /* ProgressIndicatorTitlebarAccessoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressIndicatorTitlebarAccessoryViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -62,6 +63,7 @@
 		4C08ED4F28CB32030087E860 /* SweetieTestBrowser */ = {
 			isa = PBXGroup;
 			children = (
+				4C7E492428D32F1B00780547 /* Info.plist */,
 				4C01D44D28CF4995007CC3B4 /* TabContainer.swift */,
 				4C08ED5028CB32030087E860 /* AppDelegate.swift */,
 				4C08ED5228CB32030087E860 /* ViewController.swift */,
@@ -299,6 +301,7 @@
 				DEVELOPMENT_TEAM = Z53A52TZJF;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SweetieTestBrowser/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
@@ -327,6 +330,7 @@
 				DEVELOPMENT_TEAM = Z53A52TZJF;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SweetieTestBrowser/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
