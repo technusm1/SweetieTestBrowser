@@ -8,7 +8,6 @@ A barebones working browser, created as part of a recruitment challenge that mee
 - Tab support: Open links in tabs via context menu, Cmd + click to open a background tab etc.
 - Compact tabs as given in spec.
 - Just a barebones browser that works.
-- Nice animations.
 - `target=_blank` hyperlinks supported.
 - File selection and upload supported.
 
