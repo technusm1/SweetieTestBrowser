@@ -9,13 +9,12 @@ A barebones working browser, created as part of a recruitment challenge that mee
 - Compact tabs as given in spec.
 - Just a barebones browser that works.
 - Nice animations.
-- `target=_blank` links supported.
+- `target=_blank` hyperlinks supported.
 - File selection and upload supported.
 
 ## Limitations
 - Toolbar is not customizable.
 - Basically any features one would expect from a modern web browser, including downloading, multi-window support and tab shifting, haven't been implemented yet. I have a mind to incorporate the downloading part using another one of my projects: MK-Downloader, but its written in SwiftUI (the challenge required AppKit).
-- 
 
 ## Implemention details
 - The app components are laid out using Auto Layout for most part, because it simplifies things. All views have `translatesAutoresizingMaskIntoConstraints` set to `false`, and constraints are properly defined for each one. This allows to handle things like window resizing properly, out of the box and reliably handles all UI adjustment, including animations.
