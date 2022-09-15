@@ -47,7 +47,6 @@ class MKWindowController: NSWindowController {
         
         window.title = "Sweet Browser"
         if #available(macOS 11.0, *) {
-            window.subtitle = "by Maheep Kumar Kathuria"
             window.toolbarStyle = .unified
         }
         window.titleVisibility = .hidden

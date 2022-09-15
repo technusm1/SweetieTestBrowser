@@ -10,6 +10,8 @@ import WebKit
 import FaviconFinder
 
 class MKTabView: NSView {
+    private static var currentlyHoveredTabView: MKTabView? = nil
+    
     var compactMode: Bool = false {
         didSet {
             if compactMode {
@@ -31,7 +33,7 @@ class MKTabView: NSView {
     var isMouseOverTheView: Bool = false {
         didSet {
             closeBtn.isHidden = !isMouseOverTheView
-            self.favIconImageView.isHidden = isMouseOverTheView
+            self.favIconImageView.isHidden = isMouseOverTheView && !compactMode
             setNeedsDisplay(bounds)
         }
     }
@@ -42,7 +44,7 @@ class MKTabView: NSView {
     }
     
     private lazy var area = makeTrackingArea()
-    var closeBtn: NSButton = NSButton(image: getCloseBtnImg(), target: nil, action: nil)
+    var closeBtn: NSButton = NSButton(image: NSImage(named: NSImage.stopProgressFreestandingTemplateName)!, target: nil, action: nil)
     
     var title: String = "" {
         didSet {
@@ -101,11 +103,14 @@ class MKTabView: NSView {
     }
     
     public override func mouseEntered(with event: NSEvent) {
+        Self.currentlyHoveredTabView?.isMouseOverTheView = false
         isMouseOverTheView = true
+        Self.currentlyHoveredTabView = self
     }
 
     public override func mouseExited(with event: NSEvent) {
         isMouseOverTheView = false
+        Self.currentlyHoveredTabView = nil
     }
     
     public override func mouseDown(with event: NSEvent) {
@@ -121,14 +126,6 @@ class MKTabView: NSView {
         removeTrackingArea(area)
         area = makeTrackingArea()
         addTrackingArea(area)
-    }
-    
-    static func getCloseBtnImg() -> NSImage {
-        if #available(macOS 11.0, *) {
-            return NSImage(systemSymbolName: "xmark.square", accessibilityDescription: nil)!
-        } else {
-            return NSImage(named: NSImage.bookmarksTemplateName)!
-        }
     }
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
@@ -185,7 +182,7 @@ class MKTabView: NSView {
         // Init favicon
         self.favIconImageView = NSImageView()
         self.favIconImageView.translatesAutoresizingMaskIntoConstraints = false
-        self.favIconImageView.image = favIcon ?? NSImage(named: NSImage.bookmarksTemplateName)!
+        self.favIconImageView.image = favIcon ?? NSImage(named: NSImage.homeTemplateName)!
         self.favIconImageView.imageScaling = .scaleProportionallyDown
         addSubview(self.favIconImageView)
         
