@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4C01D44E28CF4995007CC3B4 /* TabContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C01D44D28CF4995007CC3B4 /* TabContainer.swift */; };
+		4C01D44E28CF4995007CC3B4 /* MKTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C01D44D28CF4995007CC3B4 /* MKTabView.swift */; };
 		4C08ED5128CB32030087E860 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C08ED5028CB32030087E860 /* AppDelegate.swift */; };
 		4C08ED5328CB32030087E860 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C08ED5228CB32030087E860 /* ViewController.swift */; };
 		4C08ED5528CB32040087E860 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4C08ED5428CB32040087E860 /* Assets.xcassets */; };
@@ -17,11 +17,12 @@
 		4C6C2D2D28CC5014005F7D4B /* CompactAddressBarAndTabsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C6C2D2C28CC5014005F7D4B /* CompactAddressBarAndTabsView.swift */; };
 		4C7E492628D33B5F00780547 /* MKWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C7E492528D33B5F00780547 /* MKWebView.swift */; };
 		4CB7968B28D5E80E003AD796 /* MKToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CB7968A28D5E80E003AD796 /* MKToolbar.swift */; };
+		4CB7968D28D6147D003AD796 /* TabContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CB7968C28D6147D003AD796 /* TabContainer.swift */; };
 		4CCDDE8E28D2CED50091F7F7 /* ProgressIndicatorTitlebarAccessoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCDDE8D28D2CED50091F7F7 /* ProgressIndicatorTitlebarAccessoryViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		4C01D44D28CF4995007CC3B4 /* TabContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabContainer.swift; sourceTree = "<group>"; };
+		4C01D44D28CF4995007CC3B4 /* MKTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKTabView.swift; sourceTree = "<group>"; };
 		4C08ED4D28CB32030087E860 /* SweetieTestBrowser.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SweetieTestBrowser.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C08ED5028CB32030087E860 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4C08ED5228CB32030087E860 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -33,6 +34,7 @@
 		4C7E492428D32F1B00780547 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4C7E492528D33B5F00780547 /* MKWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKWebView.swift; sourceTree = "<group>"; };
 		4CB7968A28D5E80E003AD796 /* MKToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKToolbar.swift; sourceTree = "<group>"; };
+		4CB7968C28D6147D003AD796 /* TabContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabContainer.swift; sourceTree = "<group>"; };
 		4CCDDE8D28D2CED50091F7F7 /* ProgressIndicatorTitlebarAccessoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressIndicatorTitlebarAccessoryViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -68,13 +70,14 @@
 			isa = PBXGroup;
 			children = (
 				4C7E492428D32F1B00780547 /* Info.plist */,
-				4C01D44D28CF4995007CC3B4 /* TabContainer.swift */,
+				4C01D44D28CF4995007CC3B4 /* MKTabView.swift */,
 				4C08ED5028CB32030087E860 /* AppDelegate.swift */,
 				4C08ED5228CB32030087E860 /* ViewController.swift */,
 				4C08ED5428CB32040087E860 /* Assets.xcassets */,
 				4C08ED5628CB32050087E860 /* Main.storyboard */,
 				4CCDDE8D28D2CED50091F7F7 /* ProgressIndicatorTitlebarAccessoryViewController.swift */,
 				4C08ED5F28CB323F0087E860 /* MKWindowController.swift */,
+				4CB7968C28D6147D003AD796 /* TabContainer.swift */,
 				4CB7968A28D5E80E003AD796 /* MKToolbar.swift */,
 				4C7E492528D33B5F00780547 /* MKWebView.swift */,
 				4C6C2D2C28CC5014005F7D4B /* CompactAddressBarAndTabsView.swift */,
@@ -159,11 +162,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4CB7968D28D6147D003AD796 /* TabContainer.swift in Sources */,
 				4C08ED5328CB32030087E860 /* ViewController.swift in Sources */,
 				4CCDDE8E28D2CED50091F7F7 /* ProgressIndicatorTitlebarAccessoryViewController.swift in Sources */,
 				4C08ED5128CB32030087E860 /* AppDelegate.swift in Sources */,
 				4C7E492628D33B5F00780547 /* MKWebView.swift in Sources */,
-				4C01D44E28CF4995007CC3B4 /* TabContainer.swift in Sources */,
+				4C01D44E28CF4995007CC3B4 /* MKTabView.swift in Sources */,
 				4CB7968B28D5E80E003AD796 /* MKToolbar.swift in Sources */,
 				4C08ED6028CB323F0087E860 /* MKWindowController.swift in Sources */,
 				4C6C2D2D28CC5014005F7D4B /* CompactAddressBarAndTabsView.swift in Sources */,

@@ -142,26 +142,16 @@ extension MKWindowController: NSToolbarDelegate {
             if (toolbar as! MKToolbar).isCustomizing || addressBarToolbarItem == nil {
                 print("IF CASE")
                 let item = NSToolbarItem(itemIdentifier: itemIdentifier)
-                let compactAddressBarAndTabsView = CompactAddressBarAndTabsView(frame: CGRect(x: 0, y: 0, width: self.window!.frame.width / 2.5, height: 40))
+                let compactAddressBarAndTabsView = CompactAddressBarAndTabsView(frame: CGRect(x: 0, y: 0, width: self.window!.frame.width / 1.5, height: 40))
                 compactAddressBarAndTabsView.delegate = self.contentViewController as? CompactAddressBarAndTabsViewDelegate
                 item.view = compactAddressBarAndTabsView
                 item.view?.heightAnchor.constraint(equalToConstant: 30).isActive = true
-                let widthConst = item.view?.widthAnchor.constraint(equalToConstant: self.window!.frame.width / 2.5)
+                let widthConst = item.view?.widthAnchor.constraint(equalToConstant: self.window!.frame.width / 1.5)
                 widthConst?.isActive = true
                 widthConst?.identifier = "SearchbarWidthConst"
                 addressBarToolbarItem = ((toolbar as! MKToolbar).isCustomizing) ? addressBarToolbarItem : item
                 return item
             } else if toolbar.customizationPaletteIsRunning {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-                    guard let currentIndex = (self?.addressBarToolbarItem?.view as? CompactAddressBarAndTabsView)?.currentTabIndex else { return }
-                    for _ in 1...15 {
-                        (self?.addressBarToolbarItem?.view as? CompactAddressBarAndTabsView)?.createNewTab(url: nil)
-                    }
-                    for i in (1...15).reversed() {
-                        (self?.addressBarToolbarItem?.view as? CompactAddressBarAndTabsView)?.closeTab(atIndex: currentIndex + i)
-                    }
-                    
-                }
                 return addressBarToolbarItem
             } else {
                 return addressBarToolbarItem
@@ -216,7 +206,7 @@ extension MKWindowController: NSWindowDelegate {
                 }) {
                     item.view?.removeConstraint(constraintToRemove)
                 }
-                let widthConst = item.view?.widthAnchor.constraint(equalToConstant: self.window!.frame.width / 2.5)
+                let widthConst = item.view?.widthAnchor.constraint(equalToConstant: self.window!.frame.width / 1.5)
                 widthConst?.isActive = true
                 widthConst?.identifier = "SearchbarWidthConst"
             }

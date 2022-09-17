@@ -24,7 +24,14 @@ class CompactAddressBarAndTabsView: NSView {
     var tabContainerScrollView: NSScrollView?
     var tabs: [MKTabView]
     var tabAnimationDuration: TimeInterval = 0.2
+    
     var temporaryConstraintsStorage: [NSLayoutConstraint] = []
+    var persistentConstraintsStorage: [NSLayoutConstraint] = []
+    var zeroTabsConstraintsStorage: [NSLayoutConstraint] = []
+    var oneOrMoreTabsConstraintsStorage: [NSLayoutConstraint] = []
+    var lessThan12TabsConstraintsStorage: [NSLayoutConstraint] = []
+    var moreThan12TabsConstraintsStorage: [NSLayoutConstraint] = []
+    
     var currentTabIndex: Int = -1 {
         didSet {
             if currentTabIndex == oldValue { return }
@@ -122,130 +129,120 @@ class CompactAddressBarAndTabsView: NSView {
         // By here, we assume that subviews have been constructed
         self.translatesAutoresizingMaskIntoConstraints = false
         
-        // Height constraints first
-        self.addressBarAndSearchField.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
-        self.tabContainerScrollView?.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
-        self.tabContainerScrollView?.contentView.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
-        self.btnReload.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
-        // constraints on documentView will be setup in layoutTabs
+        self.persistentConstraintsStorage = [
+            // Height constraints first
+            self.addressBarAndSearchField.heightAnchor.constraint(equalTo: self.heightAnchor),
+            self.tabContainerScrollView!.heightAnchor.constraint(equalTo: self.heightAnchor),
+            self.tabContainerScrollView!.contentView.heightAnchor.constraint(equalTo: self.heightAnchor),
+            self.tabContainerScrollView!.documentView!.heightAnchor.constraint(equalTo: self.heightAnchor),
+            self.btnReload.heightAnchor.constraint(equalTo: self.heightAnchor),
+            self.btnStopLoad.heightAnchor.constraint(equalTo: self.heightAnchor),
+            
+            // Scrollview constraints
+            self.tabContainerScrollView!.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            self.tabContainerScrollView!.contentView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            
+            // Setup reload and stopLoad buttons
+            self.btnReload.centerYAnchor.constraint(equalTo: self.addressBarAndSearchField.centerYAnchor),
+            self.btnReload.trailingAnchor.constraint(equalTo: self.addressBarAndSearchField.trailingAnchor, constant: -24),
+            self.btnStopLoad.centerYAnchor.constraint(equalTo: self.btnReload.centerYAnchor),
+            self.btnStopLoad.centerXAnchor.constraint(equalTo: self.btnReload.centerXAnchor)
+        ]
+        NSLayoutConstraint.activate(self.persistentConstraintsStorage)
         
-        // Setup tabContainerScrollView
-        self.tabContainerScrollView?.trailingAnchor.constraint(equalTo: self.trailingAnchor).isActive = true
-        self.tabContainerScrollView?.contentView.trailingAnchor.constraint(equalTo: self.trailingAnchor).isActive = true
+        self.zeroTabsConstraintsStorage = [
+            self.addressBarAndSearchField.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+            self.addressBarAndSearchField.centerYAnchor.constraint(equalTo: self.centerYAnchor),
+            self.addressBarAndSearchField.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 0.5)
+        ]
         
-        self.tabContainerScrollView?.widthAnchor.constraint(lessThanOrEqualTo: self.tabContainerScrollView!.documentView!.widthAnchor).isActive = true
-        self.tabContainerScrollView?.contentView.widthAnchor.constraint(lessThanOrEqualTo: self.tabContainerScrollView!.documentView!.widthAnchor).isActive = true
-        self.tabContainerScrollView?.widthAnchor.constraint(lessThanOrEqualTo: self.widthAnchor, multiplier: 0.6).isActive = true
-        self.tabContainerScrollView?.contentView.widthAnchor.constraint(lessThanOrEqualTo: self.widthAnchor, multiplier: 0.6).isActive = true
+        self.oneOrMoreTabsConstraintsStorage = [
+            self.addressBarAndSearchField.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 0.4),
+            self.addressBarAndSearchField.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            
+            // Scrollview constraints
+            self.tabContainerScrollView!.leadingAnchor.constraint(equalTo: self.addressBarAndSearchField.trailingAnchor),
+            self.tabContainerScrollView!.contentView.leadingAnchor.constraint(equalTo: self.addressBarAndSearchField.trailingAnchor),
+            self.tabContainerScrollView!.documentView!.leadingAnchor.constraint(equalTo: self.addressBarAndSearchField.trailingAnchor)
+        ]
         
-        // Setup address bar
-        self.addressBarAndSearchField.trailingAnchor.constraint(equalTo: self.tabContainerScrollView!.leadingAnchor, constant: -5).isActive = true
-        self.addressBarAndSearchField.leadingAnchor.constraint(equalTo: self.leadingAnchor).isActive = true
+        self.lessThan12TabsConstraintsStorage = [
+             self.tabContainerScrollView!.documentView!.trailingAnchor.constraint(equalTo: self.trailingAnchor)
+        ]
         
-        // Setup reload and stopLoad buttons
-        self.btnReload.centerYAnchor.constraint(equalTo: self.addressBarAndSearchField.centerYAnchor).isActive = true
-        self.btnReload.trailingAnchor.constraint(equalTo: self.addressBarAndSearchField.trailingAnchor, constant: -24).isActive = true
-        self.btnStopLoad.centerYAnchor.constraint(equalTo: self.btnReload.centerYAnchor).isActive = true
-        self.btnStopLoad.centerXAnchor.constraint(equalTo: self.btnReload.centerXAnchor).isActive = true
+        // For more than or equal to 12, we'll simply deactivate less than 12 constraints
     }
     
     func layoutTabs() {
         print("Laying out \(self.tabs.count) tabs")
-        var previousTabView: MKTabView? = nil
-        // Clear all previous constraints on documentView
-        self.tabContainerScrollView?.documentView?.removeConstraints(self.tabContainerScrollView?.documentView?.constraints ?? [])
-        temporaryConstraintsStorage.forEach { $0.isActive = false }
-        temporaryConstraintsStorage.removeAll(keepingCapacity: true)
-        // Init constraints - always setup
-        self.tabContainerScrollView?.documentView?.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
-        if self.tabs.count <= 12 {
-            let compactConstraint = self.tabContainerScrollView?.documentView?.widthAnchor.constraint(lessThanOrEqualTo: self.widthAnchor, multiplier: 0.6, constant: -5)
-            compactConstraint?.identifier = "CompactConstraint"
-            compactConstraint?.isActive = true
+        var compactMode = false
+        NSLayoutConstraint.deactivate(self.temporaryConstraintsStorage)
+        self.temporaryConstraintsStorage.removeAll()
+        if self.tabs.isEmpty {
+            NSLayoutConstraint.activate(zeroTabsConstraintsStorage)
         } else {
-            self.removeConstraints(self.constraints.filter { $0.identifier == "CompactConstraint" } )
+            NSLayoutConstraint.deactivate(zeroTabsConstraintsStorage)
+        }
+        if self.tabs.count >= 1 {
+            NSLayoutConstraint.activate(oneOrMoreTabsConstraintsStorage)
+        } else {
+            NSLayoutConstraint.deactivate(oneOrMoreTabsConstraintsStorage)
+        }
+        if self.tabs.count >= 6 {
+            compactMode = true
+        } else {
+            compactMode = false
+        }
+        // The if-else statement below covers both less than, equal to and more than 12 cases
+        if self.tabs.count < 12 {
+            NSLayoutConstraint.activate(lessThan12TabsConstraintsStorage)
+        } else {
+            NSLayoutConstraint.deactivate(lessThan12TabsConstraintsStorage)
         }
         
-        self.removeConstraints(self.constraints.filter {
-            Set(["HeightConstraint", "CenterYConstraint", "LeadingAnchorConstraint", "WidthAnchorConstraint1", "WidthAnchorConstraint2", "WidthAnchorConstraint3", "WidthConstraint4"]).contains($0.identifier)
-        })
-        var counter = 0
-        for tabView in self.tabs {
-            counter += 1
-            if self.tabs.count >= 6 {
-                tabView.compactMode = true
+        var previousTab: MKTabView?
+        for currentTab in self.tabs {
+            currentTab.compactMode = compactMode
+            self.temporaryConstraintsStorage.append(contentsOf: [
+                currentTab.heightAnchor.constraint(equalTo: self.heightAnchor),
+                currentTab.centerYAnchor.constraint(equalTo: self.centerYAnchor)
+            ])
+            if self.tabs.count < 12 {
+                self.temporaryConstraintsStorage.append(contentsOf: [
+                    currentTab.widthAnchor.constraint(lessThanOrEqualToConstant: 200),
+                    currentTab.widthAnchor.constraint(greaterThanOrEqualTo: self.tabContainerScrollView!.widthAnchor, multiplier: 1.0/11)
+                ])
             } else {
-                tabView.compactMode = false
+                self.temporaryConstraintsStorage.append(contentsOf: [
+                    currentTab.widthAnchor.constraint(equalTo: self.tabContainerScrollView!.contentView.widthAnchor, multiplier: 1.0/11)
+                ])
             }
-            tabView.removeConstraints(tabView.constraints.filter {
-                Set(["HeightConstraint", "CenterYConstraint", "LeadingAnchorConstraint", "WidthAnchorConstraint1", "WidthAnchorConstraint2", "WidthAnchorConstraint3", "WidthConstraint4"]).contains($0.identifier)
-            })
-//            tabView.needsUpdateConstraints = true
-            let heightConstraintForTab = tabView.heightAnchor.constraint(equalTo: self.heightAnchor)
-            heightConstraintForTab.identifier = "HeightConstraint"
-            heightConstraintForTab.isActive = true
-            let centerYConstraintForTab = tabView.centerYAnchor.constraint(equalTo: self.centerYAnchor)
-            centerYConstraintForTab.identifier = "CenterYConstraint"
-            centerYConstraintForTab.isActive = true
-            let leadingAnchorConstraintForTab = tabView.leadingAnchor.constraint(equalTo: previousTabView?.trailingAnchor ?? self.tabContainerScrollView!.documentView!.leadingAnchor, constant: 5)
-            leadingAnchorConstraintForTab.identifier = "LeadingAnchorConstraint"
-            leadingAnchorConstraintForTab.isActive = true
-            temporaryConstraintsStorage.append(leadingAnchorConstraintForTab)
-            
-            if counter == currentTabIndex + 1 {
-                tabView.compactMode = false
-                let widthConstraintForTab = tabView.widthAnchor.constraint(equalToConstant: 120)
-                widthConstraintForTab.animator().isActive = true
-                temporaryConstraintsStorage.append(widthConstraintForTab)
-                previousTabView = tabView
-                continue
-            } else if counter == currentTabIndex + 2 {
-                if currentTabIndex >= 1 {
-                    previousTabView = self.tabs[currentTabIndex - 1]
-                } else {
-                    previousTabView = nil
-                }
-            }
-            
-            if counter < 12 {
-                let widthConstraintForTab = tabView.widthAnchor.constraint(lessThanOrEqualToConstant: 120)
-                widthConstraintForTab.identifier = "WidthAnchorConstraint1"
-                widthConstraintForTab.animator().isActive = true
-                // For safety, we set the minimum width as x / 14, we need it to fill up the tabs
-                let widthConstraint2ForTab = tabView.widthAnchor.constraint(greaterThanOrEqualTo: self.widthAnchor, multiplier: 0.6/20)
-                widthConstraint2ForTab.identifier = "WidthAnchorConstraint2"
-                widthConstraint2ForTab.animator().isActive = true
-                temporaryConstraintsStorage.append(widthConstraintForTab)
-                temporaryConstraintsStorage.append(widthConstraint2ForTab)
+            if let previousTab = previousTab {
+                self.temporaryConstraintsStorage.append(contentsOf: [
+                    currentTab.leadingAnchor.constraint(equalTo: previousTab.trailingAnchor),
+                    currentTab.widthAnchor.constraint(equalTo: previousTab.widthAnchor)
+                ])
             } else {
-                let widthConstraint4ForTab = tabView.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 0.6/20)
-                widthConstraint4ForTab.identifier = "WidthAnchorConstraint4"
-                widthConstraint4ForTab.animator().isActive = true
-                temporaryConstraintsStorage.append(widthConstraint4ForTab)
+                self.temporaryConstraintsStorage.append(contentsOf: [
+                    currentTab.leadingAnchor.constraint(equalTo: self.tabContainerScrollView!.documentView!.leadingAnchor)
+                ])
             }
-            if let previousTab = previousTabView {
-                let widthConstraint3ForTab = tabView.widthAnchor.constraint(equalTo: previousTab.widthAnchor)
-                widthConstraint3ForTab.identifier = "WidthAnchorConstraint3"
-                widthConstraint3ForTab.animator().isActive = true
-                temporaryConstraintsStorage.append(widthConstraint3ForTab)
-            }
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = self.tabAnimationDuration
-                context.allowsImplicitAnimation = true
-                self.layoutSubtreeIfNeeded()
-                self.tabContainerScrollView?.contentView.layoutSubtreeIfNeeded()
-                self.tabContainerScrollView?.documentView?.layoutSubtreeIfNeeded()
-            }
-            previousTabView = tabView
+            previousTab = currentTab
+            NSLayoutConstraint.activate(temporaryConstraintsStorage)
         }
-        self.tabContainerScrollView?.documentView?.trailingAnchor.constraint(equalTo: previousTabView?.trailingAnchor ?? self.tabContainerScrollView!.documentView!.leadingAnchor).animator().isActive = true
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = self.tabAnimationDuration
-            context.allowsImplicitAnimation = true
-            self.layoutSubtreeIfNeeded()
-            self.tabContainerScrollView?.contentView.layoutSubtreeIfNeeded()
-            self.tabContainerScrollView?.documentView?.layoutSubtreeIfNeeded()
+        if let previousTab = previousTab {
+            if self.tabs.count < 6 {
+                self.temporaryConstraintsStorage.append(contentsOf: [
+                    self.tabContainerScrollView!.documentView!.trailingAnchor.constraint(greaterThanOrEqualTo: previousTab.trailingAnchor)
+                ])
+            } else {
+                self.temporaryConstraintsStorage.append(contentsOf: [
+                    self.tabContainerScrollView!.documentView!.trailingAnchor.constraint(equalTo: previousTab.trailingAnchor)
+                ])
+            }
+            
         }
+        NSLayoutConstraint.activate(self.temporaryConstraintsStorage)
     }
     
     func goForward() {
