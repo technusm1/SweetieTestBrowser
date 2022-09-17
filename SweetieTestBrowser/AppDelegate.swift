@@ -21,23 +21,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         print("Close tab action")
         guard let activeWindow = NSApplication.shared.keyWindow else { return }
         guard let wc = activeWindow.windowController as? MKWindowController else { return }
-        wc.addressBarAndTabsView?.closeTab(atIndex: wc.addressBarAndTabsView?.currentTabIndex ?? -1)
+        guard let addressBarView = wc.addressBarToolbarItem?.view as? CompactAddressBarAndTabsView else { return }
+        addressBarView.closeTab(atIndex: addressBarView.currentTabIndex)
     }
     
     @IBAction func switchToNextTabMenuItemPressed(_ sender: NSMenuItem) {
         guard let activeWindow = NSApplication.shared.keyWindow else { return }
         guard let wc = activeWindow.windowController as? MKWindowController else { return }
-        guard let tabCount = wc.addressBarAndTabsView?.tabs.count, tabCount != 0 else { return }
-        guard let currentTabIndex = wc.addressBarAndTabsView?.currentTabIndex else { return }
-        wc.addressBarAndTabsView?.currentTabIndex = (currentTabIndex + 1) % tabCount
+        guard let addressBarView = wc.addressBarToolbarItem?.view as? CompactAddressBarAndTabsView else { return }
+        
+        let tabCount = addressBarView.tabs.count
+        guard tabCount != 0 else { return }
+        
+        addressBarView.currentTabIndex = (addressBarView.currentTabIndex + 1) % tabCount
     }
     
     @IBAction func switchToPreviousTabMenuItemPressed(_ sender: Any) {
         guard let activeWindow = NSApplication.shared.keyWindow else { return }
         guard let wc = activeWindow.windowController as? MKWindowController else { return }
-        guard let tabCount = wc.addressBarAndTabsView?.tabs.count, tabCount != 0 else { return }
-        guard let currentTabIndex = wc.addressBarAndTabsView?.currentTabIndex else { return }
-        wc.addressBarAndTabsView?.currentTabIndex = (currentTabIndex - 1 + tabCount) % tabCount
+        guard let addressBarView = wc.addressBarToolbarItem?.view as? CompactAddressBarAndTabsView else { return }
+        
+        let tabCount = addressBarView.tabs.count
+        guard tabCount != 0 else { return }
+        addressBarView.currentTabIndex = (addressBarView.currentTabIndex - 1 + tabCount) % tabCount
     }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
