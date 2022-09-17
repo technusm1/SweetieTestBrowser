@@ -73,7 +73,7 @@ class MKWebView: WKWebView {
             }
             
             if let action = originalMenu.action {
-                originalMenu.target?.perform(action, with: originalMenu)
+                _ = originalMenu.target?.perform(action, with: originalMenu)
             }
         }
     }
