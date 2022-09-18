@@ -23,7 +23,7 @@ class CompactAddressBarAndTabsView: NSView {
     
     var tabContainerScrollView: NSScrollView?
     var tabs: [MKTabView]
-    var tabAnimationDuration: TimeInterval = 0.2
+    var tabAnimationDuration: TimeInterval = 0.4
     
     var temporaryConstraintsStorage: [NSLayoutConstraint] = []
     var persistentConstraintsStorage: [NSLayoutConstraint] = []
@@ -38,7 +38,12 @@ class CompactAddressBarAndTabsView: NSView {
             // Select the tab at currentTabIndex
             if currentTabIndex >= 0 && currentTabIndex < tabs.count {
                 tabs[currentTabIndex].isSelected = true
-                layoutTabs()
+                NSAnimationContext.runAnimationGroup { context in
+                    context.duration = 0.3
+                    context.allowsImplicitAnimation = true
+                    layoutTabs()
+                    self.layoutSubtreeIfNeeded()
+                }
             }
             // Unselect the tab at oldValue
             if oldValue >= 0 && oldValue < tabs.count {
@@ -69,7 +74,12 @@ class CompactAddressBarAndTabsView: NSView {
         super.init(frame: frameRect)
         setupView()
         setupViewConstraints()
-        layoutTabs()
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.3
+            context.allowsImplicitAnimation = true
+            layoutTabs()
+            self.layoutSubtreeIfNeeded()
+        }
     }
     
     private func setupView() {
@@ -104,6 +114,7 @@ class CompactAddressBarAndTabsView: NSView {
         
         // init the scroll view
         self.tabContainerScrollView = NSScrollView()
+        self.tabContainerScrollView?.wantsLayer = true
         self.tabContainerScrollView?.translatesAutoresizingMaskIntoConstraints = false
         self.tabContainerScrollView?.borderType = .noBorder
         self.tabContainerScrollView?.drawsBackground = false
@@ -168,7 +179,7 @@ class CompactAddressBarAndTabsView: NSView {
         ]
         
         self.lessThan12TabsConstraintsStorage = [
-             self.tabContainerScrollView!.documentView!.trailingAnchor.constraint(equalTo: self.trailingAnchor)
+            self.tabContainerScrollView!.documentView!.trailingAnchor.constraint(equalTo: self.trailingAnchor)
         ]
         
         // For more than or equal to 12, we'll simply deactivate less than 12 constraints
@@ -181,6 +192,7 @@ class CompactAddressBarAndTabsView: NSView {
         self.temporaryConstraintsStorage.removeAll()
         if self.tabs.isEmpty {
             NSLayoutConstraint.activate(zeroTabsConstraintsStorage)
+            
         } else {
             NSLayoutConstraint.deactivate(zeroTabsConstraintsStorage)
         }
@@ -200,7 +212,6 @@ class CompactAddressBarAndTabsView: NSView {
         } else {
             NSLayoutConstraint.deactivate(lessThan12TabsConstraintsStorage)
         }
-        
         var previousTab: MKTabView?
         for (idx, currentTab) in self.tabs.enumerated() {
             currentTab.compactMode = compactMode
@@ -304,6 +315,12 @@ class CompactAddressBarAndTabsView: NSView {
         }
         self.tabContainerScrollView?.documentView?.addSubview(view2)
         currentTabIndex = tabs.count - 1
+        scrollToTabInScrollView()
+    }
+    
+    func scrollToTabInScrollView() {
+        guard let width = tabContainerScrollView?.frame.size.width else { return }
+        tabContainerScrollView?.contentView.scroll(NSPoint(x: width, y: 0))
     }
     
     func closeTab(atIndex index: Int) {
@@ -313,13 +330,20 @@ class CompactAddressBarAndTabsView: NSView {
         
         let tabToClose = self.tabs[index]
         self.tabs.remove(at: index)
-        self.tabContainerScrollView?.documentView?.subviews.remove(at: index)
         for i in index..<self.tabs.count {
             self.tabs[i].tag -= 1
         }
         self.currentTabIndex -= 1
         self.delegate?.addressBarAndTabView(tabRemoved: tabToClose, atIndex: index)
-        self.layoutTabs()
+        tabToClose.alphaValue = 0
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.3
+            context.allowsImplicitAnimation = true
+//            tabToClose.alphaValue = 0
+            layoutTabs()
+            self.tabContainerScrollView?.documentView?.subviews.remove(at: index)
+            self.layoutSubtreeIfNeeded()
+        }
         if self.currentTabIndex < 0 && !self.tabs.isEmpty { self.currentTabIndex = 0 }
     }
     
