@@ -12,6 +12,17 @@ class MKWindowController: NSWindowController {
     var addressBarToolbarItem: NSToolbarItem?
     var titlebarAccessoryViewController: ProgressIndicatorTitlebarAccessoryViewController?
     var stupidCounter: Int = 0
+    var addressBarToolbarItemSizeConstraint: NSLayoutConstraint?
+    
+    var actionsMenu: NSMenu = {
+        var menu = NSMenu(title: "")
+        let menuItem1 = NSMenuItem(title: "Get info", action: nil, keyEquivalent: "")
+        let menuItem2 = NSMenuItem(title: "Quick Look", action: nil, keyEquivalent: "")
+        let menuItem3 = NSMenuItem.separator()
+        let menuItem4 = NSMenuItem(title: "Move to trash...", action: nil, keyEquivalent: "")
+        menu.items = [menuItem1, menuItem2, menuItem3, menuItem4]
+        return menu
+    }()
 
     override func windowDidLoad() {
         self.window?.setFrameAutosaveName("MKMainWindow")
@@ -61,11 +72,11 @@ class MKWindowController: NSWindowController {
 
 extension MKWindowController: NSToolbarDelegate {
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        return [.backForwardBtnItemIdentifier, .flexibleSpace, .searchBarAndTabStripIdentifier, .flexibleSpace, .newTabButtonIdentifier]
+        return [.windowsListMenuItemIdentifier, .backForwardBtnItemIdentifier, .flexibleSpace, .searchBarAndTabStripIdentifier, .flexibleSpace, .newTabButtonIdentifier]
     }
     
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        return [.backForwardBtnItemIdentifier, .searchBarAndTabStripIdentifier, .newTabButtonIdentifier, .flexibleSpace]
+        return [.windowsListMenuItemIdentifier, .backForwardBtnItemIdentifier, .searchBarAndTabStripIdentifier, .newTabButtonIdentifier, .flexibleSpace]
     }
     
     func toolbarWillAddItem(_ notification: Notification) {
@@ -132,6 +143,24 @@ extension MKWindowController: NSToolbarDelegate {
             toolbarItemGroup.paletteLabel = "Navigation controls"
             toolbarItemGroup.toolTip = "Go to the previous or the next page"
             return toolbarItemGroup
+            
+        case .windowsListMenuItemIdentifier:
+            let toolbarItem: NSToolbarItem
+            if #available(macOS 10.15, *) {
+                let toolbarMenuItem = NSMenuToolbarItem(itemIdentifier: itemIdentifier)
+                toolbarMenuItem.showsIndicator = true
+                toolbarMenuItem.menu = self.actionsMenu
+                toolbarMenuItem.isBordered = false
+                toolbarMenuItem.title = "Window 1"
+                toolbarItem = toolbarMenuItem
+            } else {
+                toolbarItem = NSToolbarItem(itemIdentifier: itemIdentifier)
+            }
+            toolbarItem.label = "Windows"
+            toolbarItem.paletteLabel = "Windows List"
+            toolbarItem.toolTip = "Displays all the open windows in the browser"
+            toolbarItem.visibilityPriority = .low
+            return toolbarItem
         
         case .searchBarAndTabStripIdentifier:
             print("item requested")
@@ -146,9 +175,10 @@ extension MKWindowController: NSToolbarDelegate {
                 compactAddressBarAndTabsView.delegate = self.contentViewController as? CompactAddressBarAndTabsViewDelegate
                 item.view = compactAddressBarAndTabsView
                 item.view?.heightAnchor.constraint(equalToConstant: 30).isActive = true
-                let widthConst = item.view?.widthAnchor.constraint(equalToConstant: self.window!.frame.width / 1.5)
-                widthConst?.isActive = true
-                widthConst?.identifier = "SearchbarWidthConst"
+                
+                self.addressBarToolbarItemSizeConstraint?.isActive = false
+                self.addressBarToolbarItemSizeConstraint = item.view?.widthAnchor.constraint(equalToConstant: self.window!.frame.width / 1.5)
+                self.addressBarToolbarItemSizeConstraint?.isActive = true
                 addressBarToolbarItem = ((toolbar as! MKToolbar).isCustomizing) ? addressBarToolbarItem : item
                 return item
             } else if toolbar.customizationPaletteIsRunning {
@@ -183,6 +213,7 @@ extension NSToolbarItem.Identifier {
     static let backForwardBtnItemIdentifier = NSToolbarItem.Identifier("BackForwardBtnItem")
     static let searchBarAndTabStripIdentifier = NSToolbarItem.Identifier("SearchBarItem")
     static let newTabButtonIdentifier = NSToolbarItem.Identifier("NewTabButton")
+    static let windowsListMenuItemIdentifier = NSToolbarItem.Identifier("WindowsListMenuItem")
 }
 
 extension String {
@@ -201,14 +232,9 @@ extension MKWindowController: NSWindowDelegate {
     func windowDidResize(_ notification: Notification) {
         for item in self.window?.toolbar?.items ?? [] {
             if item.itemIdentifier == .searchBarAndTabStripIdentifier {
-                if let constraintToRemove = item.view?.constraints.first(where: { constraint in
-                    constraint.identifier == "SearchbarWidthConst"
-                }) {
-                    item.view?.removeConstraint(constraintToRemove)
-                }
-                let widthConst = item.view?.widthAnchor.constraint(equalToConstant: self.window!.frame.width / 1.5)
-                widthConst?.isActive = true
-                widthConst?.identifier = "SearchbarWidthConst"
+                self.addressBarToolbarItemSizeConstraint?.isActive = false
+                self.addressBarToolbarItemSizeConstraint = item.view?.widthAnchor.constraint(equalToConstant: self.window!.frame.width / 1.5)
+                self.addressBarToolbarItemSizeConstraint?.isActive = true
             }
         }
     }
