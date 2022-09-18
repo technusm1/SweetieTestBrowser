@@ -13,20 +13,14 @@ class MKWindowController: NSWindowController {
     var titlebarAccessoryViewController: ProgressIndicatorTitlebarAccessoryViewController?
     var stupidCounter: Int = 0
     var addressBarToolbarItemSizeConstraint: NSLayoutConstraint?
-    
-    var actionsMenu: NSMenu = {
-        var menu = NSMenu(title: "")
-        let menuItem1 = NSMenuItem(title: "Get info", action: nil, keyEquivalent: "")
-        let menuItem2 = NSMenuItem(title: "Quick Look", action: nil, keyEquivalent: "")
-        let menuItem3 = NSMenuItem.separator()
-        let menuItem4 = NSMenuItem(title: "Move to trash...", action: nil, keyEquivalent: "")
-        menu.items = [menuItem1, menuItem2, menuItem3, menuItem4]
-        return menu
-    }()
 
     override func windowDidLoad() {
-        self.window?.setFrameAutosaveName("MKMainWindow")
+        print("Setting window title...")
+        let winTitle = "Window \(NSApplication.shared.windows.count)"
+        self.window?.title = winTitle
+        self.window?.setFrameAutosaveName("MKMain" + winTitle.replacingOccurrences(of: " ", with: ""))
         self.window?.backgroundColor = .windowBackgroundColor
+        self.window?.animationBehavior = .documentWindow
         super.windowDidLoad()
         let minSize = NSSize(width: 570, height: 220)
         self.window?.minSize = minSize
@@ -57,7 +51,6 @@ class MKWindowController: NSWindowController {
         toolbar.autosavesConfiguration = true
         toolbar.centeredItemIdentifier = .searchBarAndTabStripIdentifier
         
-        window.title = "Sweet Browser"
         if #available(macOS 11.0, *) {
             window.toolbarStyle = .unified
         }
@@ -149,9 +142,22 @@ extension MKWindowController: NSToolbarDelegate {
             if #available(macOS 10.15, *) {
                 let toolbarMenuItem = NSMenuToolbarItem(itemIdentifier: itemIdentifier)
                 toolbarMenuItem.showsIndicator = true
-                toolbarMenuItem.menu = self.actionsMenu
+                DispatchQueue.main.async {
+                    toolbarMenuItem.menu = {
+                        var menu = NSMenu(title: "")
+                        var menuItems = [NSMenuItem]()
+                        NSApplication.shared.windows.forEach { window in
+                            menuItems.append(NSMenuItem(title: window.title ?? "Untitled Window", action: nil, keyEquivalent: ""))
+                        }
+                        
+                        let menuItem3 = NSMenuItem.separator()
+                        let menuItem4 = NSMenuItem(title: "Move to trash...", action: nil, keyEquivalent: "")
+                        menu.items = menuItems + [menuItem3, menuItem4]
+                        return menu
+                    }()
+                }
                 toolbarMenuItem.isBordered = false
-                toolbarMenuItem.title = "Window 1"
+                toolbarMenuItem.title = self.window?.title ?? "Untitled Window"
                 toolbarItem = toolbarMenuItem
             } else {
                 toolbarItem = NSToolbarItem(itemIdentifier: itemIdentifier)
@@ -229,6 +235,15 @@ extension String {
 }
 
 extension MKWindowController: NSWindowDelegate {
+    func windowWillClose(_ notification: Notification) {
+        guard var appDelegate = NSApplication.shared.delegate as? AppDelegate else { return }
+        print("closure received: old size =", appDelegate.wcList.count)
+        appDelegate.wcList.removeAll { windowController in
+            windowController == self
+        }
+        print(appDelegate.wcList.count)
+    }
+    
     func windowDidResize(_ notification: Notification) {
         for item in self.window?.toolbar?.items ?? [] {
             if item.itemIdentifier == .searchBarAndTabStripIdentifier {
