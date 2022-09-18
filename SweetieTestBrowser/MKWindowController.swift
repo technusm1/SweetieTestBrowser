@@ -11,8 +11,6 @@ class MKWindowController: NSWindowController {
     
     var addressBarToolbarItem: NSToolbarItem?
     var titlebarAccessoryViewController: ProgressIndicatorTitlebarAccessoryViewController?
-    var stupidCounter: Int = 0
-    var addressBarToolbarItemSizeConstraint: NSLayoutConstraint?
 
     override func windowDidLoad() {
         print("Setting window title...")
@@ -74,6 +72,11 @@ extension MKWindowController: NSToolbarDelegate {
     
     func toolbarWillAddItem(_ notification: Notification) {
         print("will add to toolbar")
+        guard let userInfo = notification.userInfo as? [String : Any] else { return }
+        guard let toolbarItem = userInfo["item"] as? NSToolbarItem else { return }
+        if toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier {
+            toolbarItem.minSize.width = self.window!.frame.width / 1.7
+        }
     }
     
     func toolbarDidRemoveItem(_ notification: Notification) {
@@ -177,19 +180,17 @@ extension MKWindowController: NSToolbarDelegate {
             if (toolbar as! MKToolbar).isCustomizing || addressBarToolbarItem == nil {
                 print("IF CASE")
                 let item = NSToolbarItem(itemIdentifier: itemIdentifier)
-                let compactAddressBarAndTabsView = CompactAddressBarAndTabsView(frame: CGRect(x: 0, y: 0, width: self.window!.frame.width / 1.5, height: 40))
+                let compactAddressBarAndTabsView = CompactAddressBarAndTabsView(frame: CGRect(x: 0, y: 0, width: self.window!.frame.width / 1.7, height: 30))
+                compactAddressBarAndTabsView.autoresizingMask = [.width]
                 compactAddressBarAndTabsView.delegate = self.contentViewController as? CompactAddressBarAndTabsViewDelegate
                 item.view = compactAddressBarAndTabsView
-                item.view?.heightAnchor.constraint(equalToConstant: 30).isActive = true
+//                item.view?.heightAnchor.constraint(equalToConstant: 30).isActive = true
                 
-                self.addressBarToolbarItemSizeConstraint?.isActive = false
-                self.addressBarToolbarItemSizeConstraint = item.view?.widthAnchor.constraint(equalToConstant: self.window!.frame.width / 1.5)
-                self.addressBarToolbarItemSizeConstraint?.isActive = true
+                item.minSize.width = self.window!.frame.width / 1.7
                 addressBarToolbarItem = ((toolbar as! MKToolbar).isCustomizing) ? addressBarToolbarItem : item
                 return item
-            } else if toolbar.customizationPaletteIsRunning {
-                return addressBarToolbarItem
             } else {
+                self.addressBarToolbarItem?.minSize.width = self.window!.frame.width / 1.7
                 return addressBarToolbarItem
             }
             
@@ -247,9 +248,7 @@ extension MKWindowController: NSWindowDelegate {
     func windowDidResize(_ notification: Notification) {
         for item in self.window?.toolbar?.items ?? [] {
             if item.itemIdentifier == .searchBarAndTabStripIdentifier {
-                self.addressBarToolbarItemSizeConstraint?.isActive = false
-                self.addressBarToolbarItemSizeConstraint = item.view?.widthAnchor.constraint(equalToConstant: self.window!.frame.width / 1.5)
-                self.addressBarToolbarItemSizeConstraint?.isActive = true
+                self.addressBarToolbarItem?.minSize.width = self.window!.frame.width / 1.7
             }
         }
     }

@@ -138,7 +138,7 @@ class CompactAddressBarAndTabsView: NSView {
     
     private func setupViewConstraints() {
         // By here, we assume that subviews have been constructed
-        self.translatesAutoresizingMaskIntoConstraints = false
+        self.translatesAutoresizingMaskIntoConstraints = true
         
         self.persistentConstraintsStorage = [
             // Height constraints first
