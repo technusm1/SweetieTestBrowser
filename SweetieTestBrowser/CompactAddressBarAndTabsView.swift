@@ -157,13 +157,14 @@ class CompactAddressBarAndTabsView: NSView {
         ]
         
         self.oneOrMoreTabsConstraintsStorage = [
-            self.addressBarAndSearchField.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 0.4),
+            self.addressBarAndSearchField.widthAnchor.constraint(lessThanOrEqualTo: self.widthAnchor, multiplier: 0.5),
+            self.addressBarAndSearchField.widthAnchor.constraint(greaterThanOrEqualTo: self.widthAnchor, multiplier: 0.4),
             self.addressBarAndSearchField.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             
             // Scrollview constraints
-            self.tabContainerScrollView!.leadingAnchor.constraint(equalTo: self.addressBarAndSearchField.trailingAnchor),
-            self.tabContainerScrollView!.contentView.leadingAnchor.constraint(equalTo: self.addressBarAndSearchField.trailingAnchor),
-            self.tabContainerScrollView!.documentView!.leadingAnchor.constraint(equalTo: self.addressBarAndSearchField.trailingAnchor)
+            self.tabContainerScrollView!.leadingAnchor.constraint(equalTo: self.addressBarAndSearchField.trailingAnchor, constant: 10),
+            self.tabContainerScrollView!.contentView.leadingAnchor.constraint(equalTo: self.addressBarAndSearchField.trailingAnchor, constant: 10),
+            self.tabContainerScrollView!.documentView!.leadingAnchor.constraint(equalTo: self.addressBarAndSearchField.trailingAnchor, constant: 10)
         ]
         
         self.lessThan12TabsConstraintsStorage = [
@@ -201,30 +202,53 @@ class CompactAddressBarAndTabsView: NSView {
         }
         
         var previousTab: MKTabView?
-        for currentTab in self.tabs {
+        for (idx, currentTab) in self.tabs.enumerated() {
             currentTab.compactMode = compactMode
             self.temporaryConstraintsStorage.append(contentsOf: [
                 currentTab.heightAnchor.constraint(equalTo: self.heightAnchor),
                 currentTab.centerYAnchor.constraint(equalTo: self.centerYAnchor)
             ])
             if self.tabs.count < 12 {
-                self.temporaryConstraintsStorage.append(contentsOf: [
-                    currentTab.widthAnchor.constraint(lessThanOrEqualToConstant: 200),
-                    currentTab.widthAnchor.constraint(greaterThanOrEqualTo: self.tabContainerScrollView!.widthAnchor, multiplier: 1.0/11)
-                ])
+                if idx != currentTabIndex {
+                    self.temporaryConstraintsStorage.append(contentsOf: [
+                        currentTab.widthAnchor.constraint(lessThanOrEqualToConstant: 140),
+                        // The hope is that we'll never reach this size, even if window resizes
+                        currentTab.widthAnchor.constraint(greaterThanOrEqualTo: self.tabContainerScrollView!.widthAnchor, multiplier: 1.0/20)
+                    ])
+                } else {
+                    currentTab.compactMode = false
+                    self.temporaryConstraintsStorage.append(contentsOf: [
+                        currentTab.widthAnchor.constraint(equalToConstant: 140)
+                    ])
+                }
             } else {
-                self.temporaryConstraintsStorage.append(contentsOf: [
-                    currentTab.widthAnchor.constraint(equalTo: self.tabContainerScrollView!.contentView.widthAnchor, multiplier: 1.0/11)
-                ])
+                if idx != currentTabIndex {
+                    self.temporaryConstraintsStorage.append(contentsOf: [
+                        currentTab.widthAnchor.constraint(equalTo: self.tabContainerScrollView!.contentView.widthAnchor, multiplier: 1.0/11)
+                    ])
+                } else {
+                    currentTab.compactMode = false
+                    self.temporaryConstraintsStorage.append(contentsOf: [
+                        currentTab.widthAnchor.constraint(equalToConstant: 140)
+                    ])
+                }
             }
             if let previousTab = previousTab {
                 self.temporaryConstraintsStorage.append(contentsOf: [
-                    currentTab.leadingAnchor.constraint(equalTo: previousTab.trailingAnchor),
-                    currentTab.widthAnchor.constraint(equalTo: previousTab.widthAnchor)
+                    currentTab.leadingAnchor.constraint(equalTo: previousTab.trailingAnchor, constant: 5)
                 ])
+                if idx != currentTabIndex && idx != currentTabIndex + 1 {
+                    self.temporaryConstraintsStorage.append(contentsOf: [
+                        currentTab.widthAnchor.constraint(equalTo: previousTab.widthAnchor)
+                    ])
+                } else if idx == currentTabIndex + 1 && idx >= 2 {
+                    self.temporaryConstraintsStorage.append(contentsOf: [
+                        currentTab.widthAnchor.constraint(equalTo: self.tabs[idx - 2].widthAnchor)
+                    ])
+                }
             } else {
                 self.temporaryConstraintsStorage.append(contentsOf: [
-                    currentTab.leadingAnchor.constraint(equalTo: self.tabContainerScrollView!.documentView!.leadingAnchor)
+                    currentTab.leadingAnchor.constraint(equalTo: self.tabContainerScrollView!.documentView!.leadingAnchor, constant: 5)
                 ])
             }
             previousTab = currentTab
@@ -233,11 +257,11 @@ class CompactAddressBarAndTabsView: NSView {
         if let previousTab = previousTab {
             if self.tabs.count < 6 {
                 self.temporaryConstraintsStorage.append(contentsOf: [
-                    self.tabContainerScrollView!.documentView!.trailingAnchor.constraint(greaterThanOrEqualTo: previousTab.trailingAnchor)
+                    self.tabContainerScrollView!.documentView!.trailingAnchor.constraint(greaterThanOrEqualTo: previousTab.trailingAnchor, constant: 5)
                 ])
             } else {
                 self.temporaryConstraintsStorage.append(contentsOf: [
-                    self.tabContainerScrollView!.documentView!.trailingAnchor.constraint(equalTo: previousTab.trailingAnchor)
+                    self.tabContainerScrollView!.documentView!.trailingAnchor.constraint(equalTo: previousTab.trailingAnchor, constant: 5)
                 ])
             }
             

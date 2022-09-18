@@ -48,7 +48,7 @@ class MKTabView: NSView {
     
     var title: String = "" {
         didSet {
-            self.titleLabel.stringValue = title + String(repeating: " ", count: max(20 - title.count, 0))
+            self.titleLabel.stringValue = title + String(repeating: " ", count: max(40 - title.count, 0))
         }
     }
     var titleLabel: NSTextField!
