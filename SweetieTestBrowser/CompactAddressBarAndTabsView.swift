@@ -191,8 +191,8 @@ class CompactAddressBarAndTabsView: NSView {
         NSLayoutConstraint.deactivate(self.temporaryConstraintsStorage)
         self.temporaryConstraintsStorage.removeAll()
         if self.tabs.isEmpty {
+            NSLayoutConstraint.deactivate(oneOrMoreTabsConstraintsStorage)
             NSLayoutConstraint.activate(zeroTabsConstraintsStorage)
-            
         } else {
             NSLayoutConstraint.deactivate(zeroTabsConstraintsStorage)
         }
