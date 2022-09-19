@@ -14,9 +14,12 @@ class MKWindowController: NSWindowController {
 
     override func windowDidLoad() {
         print("Setting window title...")
-        let winTitle = "Window \(NSApplication.shared.windows.count)"
-        self.window?.title = winTitle
-        self.window?.setFrameAutosaveName("MKMain" + winTitle.replacingOccurrences(of: " ", with: ""))
+        if let appDelegate = NSApplication.shared.delegate as? AppDelegate {
+            // window is being set up currently, so appDelegate wcList won't have it yet
+            let winTitle = "Window \(appDelegate.wcList.count + 1)"
+            self.window?.title = winTitle
+            self.window?.setFrameAutosaveName("MKMain" + winTitle.replacingOccurrences(of: " ", with: ""))
+        }
         self.window?.backgroundColor = .windowBackgroundColor
         self.window?.animationBehavior = .documentWindow
         super.windowDidLoad()
@@ -104,18 +107,28 @@ extension MKWindowController: NSToolbarDelegate {
         (self.window?.toolbar?.items.first(where: { toolbarItem in
             toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
         })?.view as? CompactAddressBarAndTabsView)?.createNewTab(url: nil)
-//        self.addressBarAndTabsView?.createNewTab(url: nil)
-//        (self.addressBarToolbarItem?.view as? CompactAddressBarAndTabsView)?.createNewTab(url: nil)
+    }
+    
+    @objc func bringWindowFromWCAtIndex(_ sender: NSMenuItem) {
+        if let appDelegate = NSApplication.shared.delegate as? AppDelegate {
+            let wc = appDelegate.wcList[sender.tag]
+            wc.showWindow(nil)
+        }
     }
     
     @objc func popupWindowsListMenu(_ sender: NSButton) {
-        var btnMenu = {
+        let btnMenu = {
             let menu = NSMenu()
             var menuItems = [NSMenuItem]()
-            NSApplication.shared.windows.forEach { window in
-                menuItems.append(NSMenuItem(title: window.title, action: #selector(newTabBtnPressed), keyEquivalent: ""))
+            if let appDelegate = NSApplication.shared.delegate as? AppDelegate {
+                for (idx, wc) in appDelegate.wcList.enumerated() {
+                    if wc == self { continue }
+                    let menuItem = NSMenuItem(title: wc.window?.title ?? "Untitled Window", action: nil, keyEquivalent: "")
+                    menuItem.tag = idx
+                    menuItem.action = #selector(bringWindowFromWCAtIndex)
+                    menuItems.append(menuItem)
+                }
             }
-            
             let menuItem3 = NSMenuItem.separator()
             let menuItem4 = NSMenuItem(title: "Move to trash...", action: nil, keyEquivalent: "")
             menu.items = menuItems + [menuItem3, menuItem4]
