@@ -95,6 +95,11 @@
                                                 <action selector="closeTabMenuItemPressed:" target="Voe-Tx-rLC" id="dPL-BJ-Hxx"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="Close Current WIndow" keyEquivalent="W" id="ZKy-kw-LhK">
+                                            <connections>
+                                                <action selector="closeCurrentWindowMenuItemPressed:" target="Voe-Tx-rLC" id="KCj-Vj-ylb"/>
+                                            </connections>
+                                        </menuItem>
                                         <menuItem title="Save…" keyEquivalent="s" id="pxx-59-PXV">
                                             <connections>
                                                 <action selector="saveDocument:" target="Ady-hI-5gd" id="teZ-XB-qJY"/>

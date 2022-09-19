@@ -130,7 +130,7 @@ extension MKWindowController: NSToolbarDelegate {
                 }
             }
             let menuItem3 = NSMenuItem.separator()
-            let menuItem4 = NSMenuItem(title: "Move to trash...", action: nil, keyEquivalent: "")
+            let menuItem4 = NSMenuItem(title: "Close This Window", action: #selector(self.window?.close), keyEquivalent: "W")
             menu.items = menuItems + [menuItem3, menuItem4]
             return menu
         }()

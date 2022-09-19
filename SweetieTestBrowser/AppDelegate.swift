@@ -12,6 +12,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     var wcList: [MKWindowController] = []
     
+    @IBAction func closeCurrentWindowMenuItemPressed(_ sender: Any) {
+        guard let activeWindow = NSApplication.shared.keyWindow else { return }
+        activeWindow.close()
+    }
+    
+    
     @IBAction func newTabMenuItemPressed(_ sender: NSMenuItem) {
         print("New tab action")
         guard let activeWindow = NSApplication.shared.keyWindow else { return }
