@@ -51,9 +51,18 @@ class CompactAddressBarAndTabsView: NSView {
             }
             guard currentTabIndex >= 0 else {
                 self.addressBarAndSearchField.stringValue = ""
+                self.btnReload.isHidden = true
+                self.btnStopLoad.isHidden = true
                 return
             }
             self.addressBarAndSearchField.stringValue = tabs[currentTabIndex].currentURL
+            if !tabs[currentTabIndex].currentURL.isEmpty {
+                self.btnReload.isHidden = tabs[currentTabIndex].webView.isLoading
+                self.btnStopLoad.isHidden = !tabs[currentTabIndex].webView.isLoading
+            } else {
+                self.btnReload.isHidden = true
+                self.btnStopLoad.isHidden = true
+            }
             let wc = self.window?.windowController as? MKWindowController
             wc?.titlebarAccessoryViewController?.isHidden = true
             delegate?.addressBarAndTabView(didSelectTab: tabs[currentTabIndex], atIndex: currentTabIndex, fromIndex: oldValue)
@@ -356,7 +365,7 @@ class CompactAddressBarAndTabsView: NSView {
     
     @objc func loadURL(_ sender: NSSearchField) {
         guard !self.addressBarAndSearchField.stringValue.isEmpty else { return }
-        if !self.addressBarAndSearchField.stringValue.hasPrefix("http://") && !self.addressBarAndSearchField.stringValue.hasPrefix("https://") {
+        if !self.addressBarAndSearchField.stringValue.hasPrefix("http://") && !self.addressBarAndSearchField.stringValue.hasPrefix("https://") && self.addressBarAndSearchField.stringValue != "about:blank" {
             self.addressBarAndSearchField.stringValue = "https://" + self.addressBarAndSearchField.stringValue
         }
         print("load url: \(self.addressBarAndSearchField.stringValue)")
@@ -375,11 +384,15 @@ class CompactAddressBarAndTabsView: NSView {
     
     @objc func reloadCurrentURL() {
         print("reload called")
-        self.tabs[currentTabIndex].webView.reload()
+        if !self.tabs[currentTabIndex].webView.isLoading {
+            self.tabs[currentTabIndex].webView.reload()
+        }
     }
     
     @objc func disableLoadingForCurrentURL() {
         print("stop load called")
-        self.tabs[currentTabIndex].webView.stopLoading()
+        if self.tabs[currentTabIndex].webView.isLoading {
+            self.tabs[currentTabIndex].webView.stopLoading()
+        }
     }
 }

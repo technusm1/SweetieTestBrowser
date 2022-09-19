@@ -82,12 +82,10 @@ class MKTabView: NSView {
             let compactAddressBarAndTabsView = self.window?.toolbar?.items.first { toolbarItem in
                 toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
             }?.view as? CompactAddressBarAndTabsView
-            
             if isSelected {
                 compactAddressBarAndTabsView?.btnReload.isHidden = true
                 compactAddressBarAndTabsView?.btnStopLoad.isHidden = false
             }
-            
             self.webView.load(URLRequest(url: URL(string: url) ?? URL(string: "https://kagi.com")!))
             FaviconFinder(url: URL(string: url) ?? URL(string: "https://kagi.com")!).downloadFavicon { result in
                 switch result {
@@ -96,7 +94,6 @@ class MKTabView: NSView {
                     DispatchQueue.main.async {
                         self.favIconImageView.image = favicon.image
                     }
-                    
                 case .failure(let error):
                     print("Error: \(error)")
                 }
@@ -135,7 +132,7 @@ class MKTabView: NSView {
     }
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        if keyPath == "estimatedProgress" && isSelected {
+        if keyPath == #keyPath(MKWebView.estimatedProgress) && isSelected {
             guard let wc = self.window?.windowController as? MKWindowController else { return }
             guard currentURL != "about:blank" else { return }
             wc.titlebarAccessoryViewController?.progressIndicator.isIndeterminate = false
@@ -145,19 +142,21 @@ class MKTabView: NSView {
                 wc.titlebarAccessoryViewController?.isHidden = false
             }
             wc.titlebarAccessoryViewController?.progressIndicator.doubleValue = webView.estimatedProgress * 100
-        } else if keyPath == "title" {
+        } else if keyPath == #keyPath(MKWebView.title) {
             if let title = webView.title, !title.isEmpty {
                 self.title = title
             }
             self.toolTip = webView.title ?? self.title
-        } else if keyPath == "URL" {
+        } else if keyPath == #keyPath(MKWebView.url) {
             if isSelected {
                 let compactAddressBarAndTabsView = self.window?.toolbar?.items.first { toolbarItem in
                     toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
                 }?.view as? CompactAddressBarAndTabsView
                 compactAddressBarAndTabsView?.addressBarAndSearchField.stringValue = webView.url?.absoluteString ?? ""
-                compactAddressBarAndTabsView?.btnReload.isHidden = false
-                compactAddressBarAndTabsView?.btnStopLoad.isHidden = true
+                if (webView.url?.absoluteString.isEmpty ?? true) || webView.url?.absoluteString == "about:blank" {
+                    compactAddressBarAndTabsView?.btnReload.isHidden = true
+                    compactAddressBarAndTabsView?.btnStopLoad.isHidden = true
+                }
             }
             FaviconFinder(url: webView.url ?? URL(string: "https://kagi.com")!).downloadFavicon { result in
                 switch result {
@@ -169,6 +168,19 @@ class MKTabView: NSView {
                     
                 case .failure(let error):
                     print("Error: \(error)")
+                }
+            }
+        } else if keyPath == #keyPath(MKWebView.isLoading) {
+            let compactAddressBarAndTabsView = self.window?.toolbar?.items.first { toolbarItem in
+                toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
+            }?.view as? CompactAddressBarAndTabsView
+            if isSelected {
+                if webView.isLoading {
+                    compactAddressBarAndTabsView?.btnReload.isHidden = true
+                    compactAddressBarAndTabsView?.btnStopLoad.isHidden = false
+                } else {
+                    compactAddressBarAndTabsView?.btnReload.isHidden = false
+                    compactAddressBarAndTabsView?.btnStopLoad.isHidden = true
                 }
             }
         }
@@ -185,6 +197,7 @@ class MKTabView: NSView {
         self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.estimatedProgress), options: .new, context: nil)
         self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.title), options: .new, context: nil)
         self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.url), options: .new, context: nil)
+        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.isLoading), options: .new, context: nil)
         
         // Init close btn
         closeBtn.target = self
