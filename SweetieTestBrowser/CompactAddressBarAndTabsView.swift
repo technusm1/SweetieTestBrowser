@@ -365,12 +365,15 @@ class CompactAddressBarAndTabsView: NSView {
     
     @objc func loadURL(_ sender: NSSearchField) {
         guard !self.addressBarAndSearchField.stringValue.isEmpty else { return }
-        if !self.addressBarAndSearchField.stringValue.hasPrefix("http://") && !self.addressBarAndSearchField.stringValue.hasPrefix("https://") && self.addressBarAndSearchField.stringValue != "about:blank" {
+        if !self.addressBarAndSearchField.stringValue.hasPrefix("http://") &&
+            !self.addressBarAndSearchField.stringValue.hasPrefix("https://") &&
+            self.addressBarAndSearchField.stringValue != "about:blank" &&
+            !self.addressBarAndSearchField.stringValue.hasPrefix("file://") {
             self.addressBarAndSearchField.stringValue = "https://" + self.addressBarAndSearchField.stringValue
         }
         print("load url: \(self.addressBarAndSearchField.stringValue)")
         let url = self.addressBarAndSearchField.stringValue
-        guard !url.isEmpty && url.isValidURL else { return }
+        guard !url.isEmpty && (url.isValidURL || url.isFileURL) else { return }
         
         if currentTabIndex < 0 {
             // we're in an empty state

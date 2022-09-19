@@ -78,7 +78,7 @@ class MKTabView: NSView {
     var webView: MKWebView!
     
     func navigateTo(_ url: String) {
-        if !url.isEmpty && url.isValidURL {
+        if !url.isEmpty {
             let compactAddressBarAndTabsView = self.window?.toolbar?.items.first { toolbarItem in
                 toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
             }?.view as? CompactAddressBarAndTabsView
@@ -86,16 +86,22 @@ class MKTabView: NSView {
                 compactAddressBarAndTabsView?.btnReload.isHidden = true
                 compactAddressBarAndTabsView?.btnStopLoad.isHidden = false
             }
-            self.webView.load(URLRequest(url: URL(string: url) ?? URL(string: "https://kagi.com")!))
-            FaviconFinder(url: URL(string: url) ?? URL(string: "https://kagi.com")!).downloadFavicon { result in
-                switch result {
-                case .success(let favicon):
-                    print("URL of Favicon: \(favicon.url)")
-                    DispatchQueue.main.async {
-                        self.favIconImageView.image = favicon.image
+            if url.isValidURL {
+                self.webView.load(URLRequest(url: URL(string: url) ?? URL(string: "https://kagi.com")!))
+                FaviconFinder(url: URL(string: url) ?? URL(string: "https://kagi.com")!).downloadFavicon { result in
+                    switch result {
+                    case .success(let favicon):
+                        print("URL of Favicon: \(favicon.url)")
+                        DispatchQueue.main.async {
+                            self.favIconImageView.image = favicon.image
+                        }
+                    case .failure(let error):
+                        print("Error: \(error)")
                     }
-                case .failure(let error):
-                    print("Error: \(error)")
+                }
+            } else if url.isFileURL {
+                if let urlToLoad = URL(string: url.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") {
+                    self.webView.loadFileURL(urlToLoad, allowingReadAccessTo: urlToLoad)
                 }
             }
         }

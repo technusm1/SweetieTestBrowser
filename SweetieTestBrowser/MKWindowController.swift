@@ -260,6 +260,17 @@ extension String {
             return false
         }
     }
+    
+    var isFileURL: Bool {
+        if self.hasPrefix("file://") {
+            if let url = URL(string: self.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") {
+                if FileManager.default.fileExists(atPath: url.path) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
 }
 
 extension MKWindowController: NSWindowDelegate {
