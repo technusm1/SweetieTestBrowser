@@ -173,13 +173,24 @@ extension MKWindowController: NSToolbarDelegate {
             
         case .windowsListMenuItemIdentifier:
             let toolbarItem = NSToolbarItem(itemIdentifier: itemIdentifier)
+            
             let popupBtn = NSButton()
             popupBtn.title = self.window?.title ?? "Untitled Window"
             popupBtn.target = self
             popupBtn.action = #selector(popupWindowsListMenu)
             popupBtn.bezelStyle = .texturedRounded
             popupBtn.imagePosition = .imageTrailing
-            popupBtn.image = NSImage(named: NSImage.touchBarGoDownTemplateName)?.resized(to: NSSize(width: 12, height: 6))
+//            popupBtn.image = NSImage(named: NSImage.touchBarGoDownTemplateName)?.resized(to: NSSize(width: 12, height: 6))
+            let mkNSImage = NSImage(size: NSSize(width: 12, height: 6), flipped: false, drawingHandler: { destinationRect in
+                let isDarkMode = popupBtn.effectiveAppearance.name == .accessibilityHighContrastDarkAqua || popupBtn.effectiveAppearance.name == .accessibilityHighContrastVibrantDark || popupBtn.effectiveAppearance.name == .darkAqua || popupBtn.effectiveAppearance.name == .vibrantDark
+                
+                let img = isDarkMode ? NSImage(named: NSImage.touchBarGoDownTemplateName)!.inverted() : NSImage(named: NSImage.touchBarGoDownTemplateName)!
+                img.draw(in: destinationRect)
+                return true
+            })
+            mkNSImage.cacheMode = .never
+            popupBtn.image = mkNSImage
+            
             toolbarItem.view = popupBtn
             toolbarItem.label = "Windows"
             toolbarItem.paletteLabel = "Windows List"
@@ -283,25 +294,25 @@ extension MKWindowController {
     }
 }
 
-// Taken from: https://stackoverflow.com/questions/11949250/how-to-resize-nsimage
-extension NSImage {
-    func resized(to newSize: NSSize) -> NSImage? {
-        if let bitmapRep = NSBitmapImageRep(
-            bitmapDataPlanes: nil, pixelsWide: Int(newSize.width), pixelsHigh: Int(newSize.height),
-            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
-            colorSpaceName: .calibratedRGB, bytesPerRow: 0, bitsPerPixel: 0
-        ) {
-            bitmapRep.size = newSize
-            NSGraphicsContext.saveGraphicsState()
-            NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmapRep)
-            draw(in: NSRect(x: 0, y: 0, width: newSize.width, height: newSize.height), from: .zero, operation: .copy, fraction: 1.0)
-            NSGraphicsContext.restoreGraphicsState()
+// Taken from: https://stackoverflow.com/a/60536287/4385319
+public extension NSImage {
+    func inverted() -> NSImage {
+        guard let cgImage = self.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return self }
+        let ciImage = CIImage(cgImage: cgImage)
+        guard let filter = CIFilter(name: "CIColorInvert") else { return self }
+        filter.setValue(ciImage, forKey: kCIInputImageKey)
+        guard let outputImage = filter.outputImage else { return self }
+        guard let outputCgImage = outputImage.toCGImage() else { return self }
+        return NSImage(cgImage: outputCgImage, size: self.size)
+    }
+}
 
-            let resizedImage = NSImage(size: newSize)
-            resizedImage.addRepresentation(bitmapRep)
-            return resizedImage
+fileprivate extension CIImage {
+    func toCGImage() -> CGImage? {
+        let context = CIContext(options: nil)
+        if let cgImage = context.createCGImage(self, from: self.extent) {
+            return cgImage
         }
-
         return nil
     }
 }
