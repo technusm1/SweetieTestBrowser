@@ -11,7 +11,7 @@ class MKWindowController: NSWindowController {
     
     var addressBarToolbarItem: NSToolbarItem?
     var titlebarAccessoryViewController: ProgressIndicatorTitlebarAccessoryViewController?
-
+    
     override func windowDidLoad() {
         print("Setting window title...")
         if let appDelegate = NSApplication.shared.delegate as? AppDelegate {
@@ -61,7 +61,7 @@ class MKWindowController: NSWindowController {
         window.toolbar?.validateVisibleItems()
         window.toolbar?.displayMode = .iconOnly
     }
-
+    
 }
 
 extension MKWindowController: NSToolbarDelegate {
@@ -180,11 +180,8 @@ extension MKWindowController: NSToolbarDelegate {
             popupBtn.action = #selector(popupWindowsListMenu)
             popupBtn.bezelStyle = .texturedRounded
             popupBtn.imagePosition = .imageTrailing
-//            popupBtn.image = NSImage(named: NSImage.touchBarGoDownTemplateName)?.resized(to: NSSize(width: 12, height: 6))
             let mkNSImage = NSImage(size: NSSize(width: 12, height: 6), flipped: false, drawingHandler: { destinationRect in
-                let isDarkMode = popupBtn.effectiveAppearance.name == .accessibilityHighContrastDarkAqua || popupBtn.effectiveAppearance.name == .accessibilityHighContrastVibrantDark || popupBtn.effectiveAppearance.name == .darkAqua || popupBtn.effectiveAppearance.name == .vibrantDark
-                
-                let img = isDarkMode ? NSImage(named: NSImage.touchBarGoDownTemplateName)!.inverted() : NSImage(named: NSImage.touchBarGoDownTemplateName)!
+                let img = NSImage(named: NSImage.touchBarGoDownTemplateName)!.tint(color: .controlTextColor)
                 img.draw(in: destinationRect)
                 return true
             })
@@ -197,7 +194,7 @@ extension MKWindowController: NSToolbarDelegate {
             toolbarItem.toolTip = "Displays all the open windows in the browser"
             toolbarItem.visibilityPriority = .low
             return toolbarItem
-        
+            
         case .searchBarAndTabStripIdentifier:
             print("item requested")
             print((toolbar as! MKToolbar).isCustomizing, toolbar.customizationPaletteIsRunning)
@@ -305,25 +302,14 @@ extension MKWindowController {
     }
 }
 
-// Taken from: https://stackoverflow.com/a/60536287/4385319
-public extension NSImage {
-    func inverted() -> NSImage {
-        guard let cgImage = self.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return self }
-        let ciImage = CIImage(cgImage: cgImage)
-        guard let filter = CIFilter(name: "CIColorInvert") else { return self }
-        filter.setValue(ciImage, forKey: kCIInputImageKey)
-        guard let outputImage = filter.outputImage else { return self }
-        guard let outputCgImage = outputImage.toCGImage() else { return self }
-        return NSImage(cgImage: outputCgImage, size: self.size)
-    }
-}
-
-fileprivate extension CIImage {
-    func toCGImage() -> CGImage? {
-        let context = CIContext(options: nil)
-        if let cgImage = context.createCGImage(self, from: self.extent) {
-            return cgImage
+extension NSImage {
+    // Remember, works for template images only
+    func tint(color: NSColor) -> NSImage {
+        return NSImage(size: size, flipped: false) { (rect) -> Bool in
+            color.set()
+            rect.fill()
+            self.draw(in: rect, from: NSRect(origin: .zero, size: self.size), operation: .destinationIn, fraction: 1.0)
+            return true
         }
-        return nil
     }
 }
