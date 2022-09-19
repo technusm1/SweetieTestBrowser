@@ -147,10 +147,10 @@ extension MKWindowController: NSToolbarDelegate {
                 toolbarMenuItem.showsIndicator = true
                 DispatchQueue.main.async {
                     toolbarMenuItem.menu = {
-                        var menu = NSMenu(title: "")
+                        let menu = NSMenu(title: "")
                         var menuItems = [NSMenuItem]()
                         NSApplication.shared.windows.forEach { window in
-                            menuItems.append(NSMenuItem(title: window.title ?? "Untitled Window", action: nil, keyEquivalent: ""))
+                            menuItems.append(NSMenuItem(title: window.title, action: nil, keyEquivalent: ""))
                         }
                         
                         let menuItem3 = NSMenuItem.separator()
@@ -225,6 +225,7 @@ extension NSToolbarItem.Identifier {
 
 extension String {
     var isValidURL: Bool {
+        if self == "about:blank" { return true }
         let detector = try! NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
         if let match = detector.firstMatch(in: self, options: [], range: NSRange(location: 0, length: self.utf16.count)) {
             // it is a link, if the match covers the whole string
@@ -237,8 +238,8 @@ extension String {
 
 extension MKWindowController: NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
-        guard var appDelegate = NSApplication.shared.delegate as? AppDelegate else { return }
-        print("closure received: old size =", appDelegate.wcList.count)
+        guard let appDelegate = NSApplication.shared.delegate as? AppDelegate else { return }
+        print("window close received: old size =", appDelegate.wcList.count)
         appDelegate.wcList.removeAll { windowController in
             windowController == self
         }

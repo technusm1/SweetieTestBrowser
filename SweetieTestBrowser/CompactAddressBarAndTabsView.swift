@@ -329,6 +329,8 @@ class CompactAddressBarAndTabsView: NSView {
         wc.titlebarAccessoryViewController?.isHidden = true
         
         let tabToClose = self.tabs[index]
+        tabToClose.webView.stopLoading()
+        tabToClose.navigateTo("about:blank")
         self.tabs.remove(at: index)
         for i in index..<self.tabs.count {
             self.tabs[i].tag -= 1
@@ -345,6 +347,11 @@ class CompactAddressBarAndTabsView: NSView {
             self.layoutSubtreeIfNeeded()
         }
         if self.currentTabIndex < 0 && !self.tabs.isEmpty { self.currentTabIndex = 0 }
+        if self.currentTabIndex < 0 && self.tabs.isEmpty {
+            self.addressBarAndSearchField.stringValue = ""
+            self.btnReload.isHidden = true
+            self.btnStopLoad.isHidden = true
+        }
     }
     
     @objc func loadURL(_ sender: NSSearchField) {

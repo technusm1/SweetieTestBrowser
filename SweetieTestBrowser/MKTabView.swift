@@ -69,19 +69,24 @@ class MKTabView: NSView {
         }
     }
     
-    // currentURL will be set by the delegate
-    var currentURL: String = ""
+    var currentURL: String {
+        get {
+            return webView.url?.absoluteString ?? ""
+        }
+    }
     var _webView: MKWebView?
     var webView: MKWebView!
     
     func navigateTo(_ url: String) {
         if !url.isEmpty && url.isValidURL {
-            self.currentURL = url
             let compactAddressBarAndTabsView = self.window?.toolbar?.items.first { toolbarItem in
                 toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
             }?.view as? CompactAddressBarAndTabsView
-            compactAddressBarAndTabsView?.btnReload.isHidden = true
-            compactAddressBarAndTabsView?.btnStopLoad.isHidden = false
+            
+            if isSelected {
+                compactAddressBarAndTabsView?.btnReload.isHidden = true
+                compactAddressBarAndTabsView?.btnStopLoad.isHidden = false
+            }
             
             self.webView.load(URLRequest(url: URL(string: url) ?? URL(string: "https://kagi.com")!))
             FaviconFinder(url: URL(string: url) ?? URL(string: "https://kagi.com")!).downloadFavicon { result in
@@ -132,6 +137,7 @@ class MKTabView: NSView {
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if keyPath == "estimatedProgress" && isSelected {
             guard let wc = self.window?.windowController as? MKWindowController else { return }
+            guard currentURL != "about:blank" else { return }
             wc.titlebarAccessoryViewController?.progressIndicator.isIndeterminate = false
             if webView.estimatedProgress.isEqual(to: 1.0) {
                 wc.titlebarAccessoryViewController?.isHidden = true
@@ -144,6 +150,27 @@ class MKTabView: NSView {
                 self.title = title
             }
             self.toolTip = webView.title ?? self.title
+        } else if keyPath == "URL" {
+            if isSelected {
+                let compactAddressBarAndTabsView = self.window?.toolbar?.items.first { toolbarItem in
+                    toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
+                }?.view as? CompactAddressBarAndTabsView
+                compactAddressBarAndTabsView?.addressBarAndSearchField.stringValue = webView.url?.absoluteString ?? ""
+                compactAddressBarAndTabsView?.btnReload.isHidden = false
+                compactAddressBarAndTabsView?.btnStopLoad.isHidden = true
+            }
+            FaviconFinder(url: webView.url ?? URL(string: "https://kagi.com")!).downloadFavicon { result in
+                switch result {
+                case .success(let favicon):
+                    print("URL of Favicon: \(favicon.url)")
+                    DispatchQueue.main.async {
+                        self.favIconImageView.image = favicon.image
+                    }
+                    
+                case .failure(let error):
+                    print("Error: \(error)")
+                }
+            }
         }
     }
     
@@ -157,6 +184,7 @@ class MKTabView: NSView {
         self.webView.allowsBackForwardNavigationGestures = true
         self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.estimatedProgress), options: .new, context: nil)
         self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.title), options: .new, context: nil)
+        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.url), options: .new, context: nil)
         
         // Init close btn
         closeBtn.target = self
@@ -227,7 +255,7 @@ class MKTabView: NSView {
     
     override func draw(_ dirtyRect: NSRect) {
         wantsLayer = true
-        layer?.cornerRadius = 4
+        layer?.cornerRadius = 6
         layer?.borderColor = NSColor.lightGray.cgColor
         layer?.borderWidth = 1
         if isSelected {
@@ -243,19 +271,12 @@ class MKTabView: NSView {
 
 extension MKTabView: WKNavigationDelegate, WKUIDelegate {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        self.currentURL = webView.url?.absoluteString ?? ""
         print(self.currentURL, self.title)
         if isSelected {
-            let searchField = self.window?.toolbar?.items.first { toolbarItem in
-                toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
-            }?.view?.subviews.first { subView in
-                subView is NSSearchField
-            } as? NSSearchField
-            searchField?.stringValue = self.currentURL
-            
             let compactAddressBarAndTabsView = self.window?.toolbar?.items.first { toolbarItem in
                 toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
             }?.view as? CompactAddressBarAndTabsView
+            compactAddressBarAndTabsView?.addressBarAndSearchField.stringValue = webView.url?.absoluteString ?? ""
             compactAddressBarAndTabsView?.btnReload.isHidden = false
             compactAddressBarAndTabsView?.btnStopLoad.isHidden = true
         }
