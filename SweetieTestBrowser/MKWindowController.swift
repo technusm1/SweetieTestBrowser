@@ -108,6 +108,23 @@ extension MKWindowController: NSToolbarDelegate {
 //        (self.addressBarToolbarItem?.view as? CompactAddressBarAndTabsView)?.createNewTab(url: nil)
     }
     
+    @objc func popupWindowsListMenu(_ sender: NSButton) {
+        var btnMenu = {
+            let menu = NSMenu()
+            var menuItems = [NSMenuItem]()
+            NSApplication.shared.windows.forEach { window in
+                menuItems.append(NSMenuItem(title: window.title, action: #selector(newTabBtnPressed), keyEquivalent: ""))
+            }
+            
+            let menuItem3 = NSMenuItem.separator()
+            let menuItem4 = NSMenuItem(title: "Move to trash...", action: nil, keyEquivalent: "")
+            menu.items = menuItems + [menuItem3, menuItem4]
+            return menu
+        }()
+        let p = NSPoint(x: sender.frame.origin.x, y: sender.frame.origin.y)
+        btnMenu.popUp(positioning: nil, at: p, in: sender.superview)
+    }
+    
     func toolbar(_ toolbar: NSToolbar, itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier, willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
         switch itemIdentifier {
         case .backForwardBtnItemIdentifier:
@@ -135,36 +152,22 @@ extension MKWindowController: NSToolbarDelegate {
                     return item
                 })
             }
+            toolbarItemGroup.visibilityPriority = .high
             toolbarItemGroup.label = "Back/Forward"
             toolbarItemGroup.paletteLabel = "Navigation controls"
             toolbarItemGroup.toolTip = "Go to the previous or the next page"
             return toolbarItemGroup
             
         case .windowsListMenuItemIdentifier:
-            let toolbarItem: NSToolbarItem
-            if #available(macOS 10.15, *) {
-                let toolbarMenuItem = NSMenuToolbarItem(itemIdentifier: itemIdentifier)
-                toolbarMenuItem.showsIndicator = true
-                DispatchQueue.main.async {
-                    toolbarMenuItem.menu = {
-                        let menu = NSMenu(title: "")
-                        var menuItems = [NSMenuItem]()
-                        NSApplication.shared.windows.forEach { window in
-                            menuItems.append(NSMenuItem(title: window.title, action: nil, keyEquivalent: ""))
-                        }
-                        
-                        let menuItem3 = NSMenuItem.separator()
-                        let menuItem4 = NSMenuItem(title: "Move to trash...", action: nil, keyEquivalent: "")
-                        menu.items = menuItems + [menuItem3, menuItem4]
-                        return menu
-                    }()
-                }
-                toolbarMenuItem.isBordered = false
-                toolbarMenuItem.title = self.window?.title ?? "Untitled Window"
-                toolbarItem = toolbarMenuItem
-            } else {
-                toolbarItem = NSToolbarItem(itemIdentifier: itemIdentifier)
-            }
+            let toolbarItem = NSToolbarItem(itemIdentifier: itemIdentifier)
+            let popupBtn = NSButton()
+            popupBtn.title = self.window?.title ?? "Untitled Window"
+            popupBtn.target = self
+            popupBtn.action = #selector(popupWindowsListMenu)
+            popupBtn.bezelStyle = .texturedRounded
+            popupBtn.imagePosition = .imageTrailing
+            popupBtn.image = NSImage(named: NSImage.touchBarGoDownTemplateName)?.resized(to: NSSize(width: 12, height: 6))
+            toolbarItem.view = popupBtn
             toolbarItem.label = "Windows"
             toolbarItem.paletteLabel = "Windows List"
             toolbarItem.toolTip = "Displays all the open windows in the browser"
@@ -180,12 +183,11 @@ extension MKWindowController: NSToolbarDelegate {
             if (toolbar as! MKToolbar).isCustomizing || addressBarToolbarItem == nil {
                 print("IF CASE")
                 let item = NSToolbarItem(itemIdentifier: itemIdentifier)
+                item.visibilityPriority = .user
                 let compactAddressBarAndTabsView = CompactAddressBarAndTabsView(frame: CGRect(x: 0, y: 0, width: self.window!.frame.width / 1.7, height: 30))
                 compactAddressBarAndTabsView.autoresizingMask = [.width]
                 compactAddressBarAndTabsView.delegate = self.contentViewController as? CompactAddressBarAndTabsViewDelegate
                 item.view = compactAddressBarAndTabsView
-//                item.view?.heightAnchor.constraint(equalToConstant: 30).isActive = true
-                
                 item.minSize.width = self.window!.frame.width / 1.7
                 addressBarToolbarItem = ((toolbar as! MKToolbar).isCustomizing) ? addressBarToolbarItem : item
                 return item
@@ -265,5 +267,28 @@ extension MKWindowController {
             self.titlebarAccessoryViewController = titlebarController
             self.titlebarAccessoryViewController?.isHidden = true
         }
+    }
+}
+
+// Taken from: https://stackoverflow.com/questions/11949250/how-to-resize-nsimage
+extension NSImage {
+    func resized(to newSize: NSSize) -> NSImage? {
+        if let bitmapRep = NSBitmapImageRep(
+            bitmapDataPlanes: nil, pixelsWide: Int(newSize.width), pixelsHigh: Int(newSize.height),
+            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+            colorSpaceName: .calibratedRGB, bytesPerRow: 0, bitsPerPixel: 0
+        ) {
+            bitmapRep.size = newSize
+            NSGraphicsContext.saveGraphicsState()
+            NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmapRep)
+            draw(in: NSRect(x: 0, y: 0, width: newSize.width, height: newSize.height), from: .zero, operation: .copy, fraction: 1.0)
+            NSGraphicsContext.restoreGraphicsState()
+
+            let resizedImage = NSImage(size: newSize)
+            resizedImage.addRepresentation(bitmapRep)
+            return resizedImage
+        }
+
+        return nil
     }
 }
