@@ -108,6 +108,7 @@ extension WebViewContainer: WKNavigationDelegate, WKUIDelegate {
         if let customAction = (webView as? MKWebView)?.contextMenuAction {
             if customAction == .openInNewTab {
                 self.appendTab(shouldSwitch: true)
+                self.tabs[self.currentTabIndex].isHidden = false
                 self.tabs[self.currentTabIndex].navigateTo(navigationAction.request.url?.absoluteString ?? "")
             }
             return nil
