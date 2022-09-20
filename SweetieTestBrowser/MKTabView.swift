@@ -1,5 +1,5 @@
 //
-//  TabContainer.swift
+//  WebViewContainer.swift
 //  SweetieTestBrowser
 //
 //  Created by Maheep Kumar Kathuria on 12/09/22.
@@ -40,6 +40,27 @@ class MKTabView: NSView {
     var isSelected: Bool = false {
         didSet {
             setNeedsDisplay(bounds)
+            if isSelected {
+                let compactAddressBarAndTabsView = self.window?.toolbar?.items.first { toolbarItem in
+                    toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
+                }?.view as? CompactAddressBarAndTabsView
+                let wc = self.window?.windowController as? MKWindowController
+                if webView.isLoading {
+                    compactAddressBarAndTabsView?.btnReload.isHidden = true
+                    compactAddressBarAndTabsView?.btnStopLoad.isHidden = false
+                    wc?.titlebarAccessoryViewController?.isHidden = false
+                } else {
+                    compactAddressBarAndTabsView?.btnReload.isHidden = false
+                    compactAddressBarAndTabsView?.btnStopLoad.isHidden = true
+                    wc?.titlebarAccessoryViewController?.isHidden = true
+                }
+                compactAddressBarAndTabsView?.addressBarAndSearchField.stringValue = webView.url?.absoluteString ?? ""
+                if (webView.url?.absoluteString.isEmpty ?? true) || webView.url?.absoluteString == "about:blank" {
+                    compactAddressBarAndTabsView?.btnReload.isHidden = true
+                    compactAddressBarAndTabsView?.btnStopLoad.isHidden = true
+                    wc?.titlebarAccessoryViewController?.isHidden = true
+                }
+            }
         }
     }
     
@@ -59,16 +80,6 @@ class MKTabView: NSView {
     var onSelect: (() -> ())?
     var onClose: (() -> ())?
     
-    var _tag = -1
-    override var tag: Int {
-        get {
-            return _tag
-        }
-        set {
-            _tag = newValue
-        }
-    }
-    
     var currentURL: String {
         get {
             return webView.url?.absoluteString ?? ""
@@ -76,36 +87,6 @@ class MKTabView: NSView {
     }
     var _webView: MKWebView?
     var webView: MKWebView!
-    
-    func navigateTo(_ url: String) {
-        if !url.isEmpty {
-            let compactAddressBarAndTabsView = self.window?.toolbar?.items.first { toolbarItem in
-                toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
-            }?.view as? CompactAddressBarAndTabsView
-            if isSelected {
-                compactAddressBarAndTabsView?.btnReload.isHidden = true
-                compactAddressBarAndTabsView?.btnStopLoad.isHidden = false
-            }
-            if url.isValidURL {
-                self.webView.load(URLRequest(url: URL(string: url) ?? URL(string: "https://kagi.com")!))
-                FaviconFinder(url: URL(string: url) ?? URL(string: "https://kagi.com")!).downloadFavicon { result in
-                    switch result {
-                    case .success(let favicon):
-                        print("URL of Favicon: \(favicon.url)")
-                        DispatchQueue.main.async {
-                            self.favIconImageView.image = favicon.image
-                        }
-                    case .failure(let error):
-                        print("Error: \(error)")
-                    }
-                }
-            } else if url.isFileURL {
-                if let urlToLoad = URL(string: url.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") {
-                    self.webView.loadFileURL(urlToLoad, allowingReadAccessTo: urlToLoad)
-                }
-            }
-        }
-    }
     
     @objc func closeAction() {
         onClose?()
@@ -193,18 +174,6 @@ class MKTabView: NSView {
     }
     
     private func setupTabView() {
-        // Setup an empty webview
-        self.webView = self._webView ?? MKWebView()
-        self.webView.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
-        self.webView.translatesAutoresizingMaskIntoConstraints = false
-        self.webView.navigationDelegate = self
-        self.webView.uiDelegate = self
-        self.webView.allowsBackForwardNavigationGestures = true
-        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.estimatedProgress), options: .new, context: nil)
-        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.title), options: .new, context: nil)
-        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.url), options: .new, context: nil)
-        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.isLoading), options: .new, context: nil)
-        
         // Init close btn
         closeBtn.target = self
         closeBtn.action = #selector(closeAction)
@@ -254,6 +223,16 @@ class MKTabView: NSView {
         self.titleLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -4).isActive = true
         self.titleLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
         //        titleLabel.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
+        
+        // Setup an empty webview
+        self.webView = self._webView ?? MKWebView()
+        self.webView.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+        self.webView.translatesAutoresizingMaskIntoConstraints = false
+        self.webView.allowsBackForwardNavigationGestures = true
+        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.estimatedProgress), options: .new, context: nil)
+        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.title), options: .new, context: nil)
+        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.url), options: .new, context: nil)
+        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.isLoading), options: .new, context: nil)
     }
     
     required init?(coder: NSCoder) {
@@ -285,73 +264,5 @@ class MKTabView: NSView {
             layer?.backgroundColor = NSColor.clear.cgColor
         }
         super.draw(dirtyRect)
-    }
-}
-
-extension MKTabView: WKNavigationDelegate, WKUIDelegate {
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        print(self.currentURL, self.title)
-        if isSelected {
-            let compactAddressBarAndTabsView = self.window?.toolbar?.items.first { toolbarItem in
-                toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
-            }?.view as? CompactAddressBarAndTabsView
-            compactAddressBarAndTabsView?.addressBarAndSearchField.stringValue = webView.url?.absoluteString ?? ""
-            compactAddressBarAndTabsView?.btnReload.isHidden = false
-            compactAddressBarAndTabsView?.btnStopLoad.isHidden = true
-        }
-    }
-    
-    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        print("Web view failed navigation")
-        // webView.loadFileURL(<#T##URL: URL##URL#>, allowingReadAccessTo: <#T##URL#>)
-    }
-    
-    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        if navigationAction.modifierFlags == .command {
-            // user cmd + clicked a link, open in new tab
-            guard let compactAddressBar = self.window?.toolbar?.items.first(where: { $0.itemIdentifier == .searchBarAndTabStripIdentifier })?.view as? CompactAddressBarAndTabsView else {
-                decisionHandler(.allow)
-                return
-            }
-            compactAddressBar.createNewBackgroundTab(url: navigationAction.request.url?.absoluteString)
-            decisionHandler(.cancel)
-            return
-        }
-        decisionHandler(.allow)
-    }
-    
-    func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-        print("something here", navigationAction.request)
-        if let customAction = (webView as? MKWebView)?.contextMenuAction {
-            if customAction == .openInNewTab {
-                guard let compactAddressBar = self.window?.toolbar?.items.first(where: { $0.itemIdentifier == .searchBarAndTabStripIdentifier })?.view as? CompactAddressBarAndTabsView else { return nil }
-                compactAddressBar.createNewTab(url: navigationAction.request.url?.absoluteString)
-            }
-            return nil
-        }
-        
-        if navigationAction.targetFrame == nil {
-            // Open in new tab
-            guard let compactAddressBar = self.window?.toolbar?.items.first(where: { $0.itemIdentifier == .searchBarAndTabStripIdentifier })?.view as? CompactAddressBarAndTabsView else { return nil }
-            compactAddressBar.createNewTab(url: navigationAction.request.url?.absoluteString)
-            return nil
-        }
-        return nil
-    }
-    
-    func webView(_ webView: WKWebView, runOpenPanelWith parameters: WKOpenPanelParameters, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping ([URL]?) -> Void) {
-        print("Open a file upload panel")
-        let fpanel = NSOpenPanel()
-        
-        fpanel.allowsMultipleSelection = parameters.allowsMultipleSelection
-        fpanel.canChooseDirectories = parameters.allowsDirectories
-        fpanel.canChooseFiles = true
-        fpanel.canCreateDirectories = false
-        fpanel.begin { response in
-            if response == .OK {
-                completionHandler(fpanel.urls)
-            }
-        }
-        
     }
 }

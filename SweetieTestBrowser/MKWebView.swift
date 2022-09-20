@@ -11,6 +11,16 @@ import WebKit
 class MKWebView: WKWebView {
     var contextMenuAction: MKWebViewContextMenuAction?
     
+    var _tag = -1
+    override var tag: Int {
+        get {
+            return _tag
+        }
+        set {
+            _tag = newValue
+        }
+    }
+    
     override func willOpenMenu(_ menu: NSMenu, with event: NSEvent) {
         super.willOpenMenu(menu, with: event)
         var items = menu.items
@@ -81,4 +91,18 @@ class MKWebView: WKWebView {
 
 enum MKWebViewContextMenuAction {
     case openInNewTab
+}
+
+extension MKWebView {
+    func navigateTo(_ url: String) {
+        if !url.isEmpty {
+            if url.isValidURL {
+                self.load(URLRequest(url: URL(string: url) ?? URL(string: "https://kagi.com")!))
+            } else if url.isFileURL {
+                if let urlToLoad = URL(string: url.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") {
+                    self.loadFileURL(urlToLoad, allowingReadAccessTo: urlToLoad)
+                }
+            }
+        }
+    }
 }

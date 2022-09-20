@@ -37,29 +37,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         print("Close tab action")
         guard let activeWindow = NSApplication.shared.keyWindow else { return }
         guard let wc = activeWindow.windowController as? MKWindowController else { return }
-        guard let addressBarView = wc.addressBarToolbarItem?.view as? CompactAddressBarAndTabsView else { return }
-        addressBarView.closeTab(atIndex: addressBarView.currentTabIndex)
+        wc.webViewContainer.deleteTab(atIndex: wc.webViewContainer.currentTabIndex)
     }
     
     @IBAction func switchToNextTabMenuItemPressed(_ sender: NSMenuItem) {
         guard let activeWindow = NSApplication.shared.keyWindow else { return }
         guard let wc = activeWindow.windowController as? MKWindowController else { return }
-        guard let addressBarView = wc.addressBarToolbarItem?.view as? CompactAddressBarAndTabsView else { return }
         
-        let tabCount = addressBarView.tabs.count
+        let tabCount = wc.webViewContainer.tabs.count
         guard tabCount != 0 else { return }
-        
-        addressBarView.currentTabIndex = (addressBarView.currentTabIndex + 1) % tabCount
+        wc.webViewContainer.switchToTab(atIndex: (wc.webViewContainer.currentTabIndex + 1) % wc.webViewContainer.tabs.count)
     }
     
     @IBAction func switchToPreviousTabMenuItemPressed(_ sender: Any) {
         guard let activeWindow = NSApplication.shared.keyWindow else { return }
         guard let wc = activeWindow.windowController as? MKWindowController else { return }
-        guard let addressBarView = wc.addressBarToolbarItem?.view as? CompactAddressBarAndTabsView else { return }
         
-        let tabCount = addressBarView.tabs.count
+        let tabCount = wc.webViewContainer.tabs.count
         guard tabCount != 0 else { return }
-        addressBarView.currentTabIndex = (addressBarView.currentTabIndex - 1 + tabCount) % tabCount
+        wc.webViewContainer.switchToTab(atIndex: (wc.webViewContainer.currentTabIndex - 1 + wc.webViewContainer.tabs.count) % wc.webViewContainer.tabs.count)
     }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {

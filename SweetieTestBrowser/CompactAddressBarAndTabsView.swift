@@ -8,14 +8,9 @@
 import Cocoa
 import WebKit
 
-protocol CompactAddressBarAndTabsViewDelegate {
-    // This method is called when a tab switch happens, or when user enters a new URL in a tab
-    func addressBarAndTabView(didSelectTab tab: MKTabView, atIndex index: Int, fromIndex previousIndex: Int)
-    // This method is called when a tab is removed, i.e. when tab is closed by the user
-    func addressBarAndTabView(tabRemoved tab: MKTabView, atIndex index: Int)
-}
-
 class CompactAddressBarAndTabsView: NSView {
+    var webViewContainer: WebViewContainer
+    
     var addressBarAndSearchField: NSSearchField
     
     var btnReload: NSButton!
@@ -32,55 +27,22 @@ class CompactAddressBarAndTabsView: NSView {
     var lessThan12TabsConstraintsStorage: [NSLayoutConstraint] = []
     var moreThan12TabsConstraintsStorage: [NSLayoutConstraint] = []
     
-    var currentTabIndex: Int = -1 {
-        didSet {
-            if currentTabIndex == oldValue { return }
-            // Select the tab at currentTabIndex
-            if currentTabIndex >= 0 && currentTabIndex < tabs.count {
-                tabs[currentTabIndex].isSelected = true
-                NSAnimationContext.runAnimationGroup { context in
-                    context.duration = 0.3
-                    context.allowsImplicitAnimation = true
-                    layoutTabs()
-                    self.layoutSubtreeIfNeeded()
-                }
-            }
-            // Unselect the tab at oldValue
-            if oldValue >= 0 && oldValue < tabs.count {
-                tabs[oldValue].isSelected = false
-            }
-            guard currentTabIndex >= 0 else {
-                self.addressBarAndSearchField.stringValue = ""
-                self.btnReload.isHidden = true
-                self.btnStopLoad.isHidden = true
-                return
-            }
-            self.addressBarAndSearchField.stringValue = tabs[currentTabIndex].currentURL
-            if !tabs[currentTabIndex].currentURL.isEmpty {
-                self.btnReload.isHidden = tabs[currentTabIndex].webView.isLoading
-                self.btnStopLoad.isHidden = !tabs[currentTabIndex].webView.isLoading
-            } else {
-                self.btnReload.isHidden = true
-                self.btnStopLoad.isHidden = true
-            }
-            let wc = self.window?.windowController as? MKWindowController
-            wc?.titlebarAccessoryViewController?.isHidden = true
-            delegate?.addressBarAndTabView(didSelectTab: tabs[currentTabIndex], atIndex: currentTabIndex, fromIndex: oldValue)
-        }
-    }
-    
-    var delegate: CompactAddressBarAndTabsViewDelegate?
-    
     required init?(coder: NSCoder) {
-        self.addressBarAndSearchField = NSSearchField()
-        self.tabs = []
-        super.init(coder: coder)
+        fatalError("init(coder:) has not been implemented")
     }
     
-    override init(frame frameRect: NSRect) {
+    init(frame frameRect: NSRect, webViewContainer: WebViewContainer) {
         self.addressBarAndSearchField = NSSearchField(frame: frameRect)
+        self.webViewContainer = webViewContainer
         self.tabs = []
         super.init(frame: frameRect)
+        for (idx, webView) in webViewContainer.tabs.enumerated() {
+            let tab = makeTabView(from: webView)
+            if webViewContainer.currentTabIndex == idx {
+                tab.isSelected = true
+            }
+            self.tabs.append(tab)
+        }
         setupView()
         setupViewConstraints()
         NSAnimationContext.runAnimationGroup { context in
@@ -89,6 +51,54 @@ class CompactAddressBarAndTabsView: NSView {
             layoutTabs()
             self.layoutSubtreeIfNeeded()
         }
+        NotificationCenter.default.addObserver(self, selector: #selector(self.tabAppendedNotification(_:)), name: .tabAppended, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.tabDeletedNotification(_:)), name: .tabDeleted, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.tabSwitchedNotification(_:)), name: .tabSwitched, object: nil)
+    }
+    
+    private func makeTabView(from webView: MKWebView) -> MKTabView {
+        let tabView = MKTabView(frame: .zero, webView: webView)
+        tabView.translatesAutoresizingMaskIntoConstraints = false
+        tabView.onSelect = {
+            self.webViewContainer.currentTabIndex = tabView.webView.tag
+        }
+        tabView.onClose = {
+            print("on close action = ", tabView.webView.tag)
+            self.webViewContainer.deleteTab(atIndex: tabView.webView.tag)
+        }
+        return tabView
+    }
+    
+    func reloadData() {
+        // Cleanup first
+        self.tabContainerScrollView?.documentView?.subviews.removeAll()
+        self.tabs.removeAll()
+        NSLayoutConstraint.deactivate(self.temporaryConstraintsStorage)
+        self.temporaryConstraintsStorage.removeAll()
+        NSLayoutConstraint.deactivate(self.persistentConstraintsStorage)
+        self.persistentConstraintsStorage.removeAll()
+        NSLayoutConstraint.deactivate(self.zeroTabsConstraintsStorage)
+        self.zeroTabsConstraintsStorage.removeAll()
+        NSLayoutConstraint.deactivate(self.oneOrMoreTabsConstraintsStorage)
+        self.oneOrMoreTabsConstraintsStorage.removeAll()
+        NSLayoutConstraint.deactivate(self.lessThan12TabsConstraintsStorage)
+        self.lessThan12TabsConstraintsStorage.removeAll()
+        NSLayoutConstraint.deactivate(self.moreThan12TabsConstraintsStorage)
+        self.moreThan12TabsConstraintsStorage.removeAll()
+        
+        
+        for (idx, webView) in webViewContainer.tabs.enumerated() {
+            let tab = makeTabView(from: webView)
+            if webViewContainer.currentTabIndex == idx {
+                tab.isSelected = true
+            }
+            self.tabs.append(tab)
+        }
+        self.tabs.forEach { tabview in
+            self.tabContainerScrollView?.documentView?.addSubview(tabview)
+        }
+        setupViewConstraints()
+        layoutTabs()
     }
     
     private func setupView() {
@@ -141,8 +151,10 @@ class CompactAddressBarAndTabsView: NSView {
         let documentView = NSView()
         documentView.wantsLayer = true
         documentView.translatesAutoresizingMaskIntoConstraints = false
-        self.tabContainerScrollView?.documentView = documentView
+        // Add tabs to documentView
+        self.tabs.forEach(documentView.addSubview(_:))
         
+        self.tabContainerScrollView?.documentView = documentView
     }
     
     private func setupViewConstraints() {
@@ -229,7 +241,7 @@ class CompactAddressBarAndTabsView: NSView {
                 currentTab.centerYAnchor.constraint(equalTo: self.centerYAnchor)
             ])
             if self.tabs.count < 12 {
-                if idx != currentTabIndex {
+                if idx != self.webViewContainer.currentTabIndex {
                     self.temporaryConstraintsStorage.append(contentsOf: [
                         currentTab.widthAnchor.constraint(lessThanOrEqualToConstant: 140),
                         // The hope is that we'll never reach this size, even if window resizes
@@ -242,7 +254,7 @@ class CompactAddressBarAndTabsView: NSView {
                     ])
                 }
             } else {
-                if idx != currentTabIndex {
+                if idx != self.webViewContainer.currentTabIndex {
                     self.temporaryConstraintsStorage.append(contentsOf: [
                         currentTab.widthAnchor.constraint(equalTo: self.tabContainerScrollView!.contentView.widthAnchor, multiplier: 1.0/11)
                     ])
@@ -257,11 +269,11 @@ class CompactAddressBarAndTabsView: NSView {
                 self.temporaryConstraintsStorage.append(contentsOf: [
                     currentTab.leadingAnchor.constraint(equalTo: previousTab.trailingAnchor, constant: 5)
                 ])
-                if idx != currentTabIndex && idx != currentTabIndex + 1 {
+                if idx != self.webViewContainer.currentTabIndex && idx != self.webViewContainer.currentTabIndex + 1 {
                     self.temporaryConstraintsStorage.append(contentsOf: [
                         currentTab.widthAnchor.constraint(equalTo: previousTab.widthAnchor)
                     ])
-                } else if idx == currentTabIndex + 1 && idx >= 2 {
+                } else if idx == self.webViewContainer.currentTabIndex + 1 && idx >= 2 {
                     self.temporaryConstraintsStorage.append(contentsOf: [
                         currentTab.widthAnchor.constraint(equalTo: self.tabs[idx - 2].widthAnchor)
                     ])
@@ -289,78 +301,66 @@ class CompactAddressBarAndTabsView: NSView {
         NSLayoutConstraint.activate(self.temporaryConstraintsStorage)
     }
     
-    func goForward() {
-        guard currentTabIndex >= 0 else { return }
-        self.tabs[currentTabIndex].webView.goForward()
-        self.addressBarAndSearchField.stringValue = self.tabs[currentTabIndex].webView.url?.absoluteString ?? ""
+    @objc func tabAppendedNotification(_ notification: Notification) {
+        guard self.webViewContainer.id == (notification.object as? WebViewContainer)?.id else { return }
+        guard let userInfo = notification.userInfo as? [String : AnyObject] else { return }
+        guard let webView = userInfo["webView"] as? MKWebView else { return }
+        guard let shouldSwitch = userInfo["shouldSwitch"] as? Bool else { return }
+        let tab = makeTabView(from: webView)
+        self.tabs.append(tab)
+        self.tabContainerScrollView?.documentView?.addSubview(tab)
+        // This may not switch to a new tab automatically, so we need to call layoutTabs
+        if !shouldSwitch {
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.3
+                context.allowsImplicitAnimation = true
+                layoutTabs()
+                self.layoutSubtreeIfNeeded()
+            }
+        }
+//        scrollToTabInScrollView()
     }
     
-    func goBack() {
-        guard currentTabIndex >= 0 else { return }
-        self.tabs[currentTabIndex].webView.goBack()
-        self.addressBarAndSearchField.stringValue = self.tabs[currentTabIndex].webView.url?.absoluteString ?? ""
+    @objc func tabDeletedNotification(_ notification: Notification) {
+        guard self.webViewContainer.id == (notification.object as? WebViewContainer)?.id else { return }
+        guard let userInfo = notification.userInfo as? [String : AnyObject] else { return }
+        guard let webView = userInfo["webView"] as? MKWebView else { return }
+        let tab = self.tabs.remove(at: webView.tag)
+        self.tabContainerScrollView?.documentView?.subviews.remove(at: webView.tag)
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.3
+            context.allowsImplicitAnimation = true
+            layoutTabs()
+            self.layoutSubtreeIfNeeded()
+        }
     }
     
-    func createNewBackgroundTab(url: String?) {
-        let callerTab = currentTabIndex
-        createNewTab(url: url)
-        currentTabIndex = callerTab
-    }
-    
-    func createNewTab(url: String?) {
-        print("called createNewTab")
-        let view2 = MKTabView(frame: .zero)
-        view2.translatesAutoresizingMaskIntoConstraints = false
-        view2.tag = tabs.count
-        view2.onSelect = {
-            self.currentTabIndex = view2.tag
+    @objc func tabSwitchedNotification(_ notification: Notification) {
+        guard self.webViewContainer.id == (notification.object as? WebViewContainer)?.id else { return }
+        guard let userInfo = notification.userInfo as? [String : Int] else { return }
+        let oldValue = userInfo["oldIndex"] ?? -1
+        if oldValue >= 0 {
+            self.tabs[oldValue].isSelected = false
         }
-        view2.onClose = {
-            self.closeTab(atIndex: view2.tag)
+        if self.webViewContainer.currentTabIndex >= 0 {
+            self.tabs[self.webViewContainer.currentTabIndex].isSelected = true
+        } else {
+            // we're back to empty state
+            self.addressBarAndSearchField.stringValue = ""
+            self.btnReload.isHidden = true
+            self.btnStopLoad.isHidden = true
         }
-        self.tabs.append(view2)
-        if let url = url {
-            view2.navigateTo(url)
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.3
+            context.allowsImplicitAnimation = true
+            layoutTabs()
+            self.layoutSubtreeIfNeeded()
         }
-        self.tabContainerScrollView?.documentView?.addSubview(view2)
-        currentTabIndex = tabs.count - 1
-        scrollToTabInScrollView()
     }
     
     func scrollToTabInScrollView() {
         guard let width = tabContainerScrollView?.frame.size.width else { return }
         tabContainerScrollView?.contentView.scroll(NSPoint(x: width, y: 0))
-    }
-    
-    func closeTab(atIndex index: Int) {
-        guard index >= 0 else { return }
-        guard let wc = self.window?.windowController as? MKWindowController else { return }
-        wc.titlebarAccessoryViewController?.isHidden = true
-        
-        let tabToClose = self.tabs[index]
-        tabToClose.webView.stopLoading()
-        tabToClose.navigateTo("about:blank")
-        self.tabs.remove(at: index)
-        for i in index..<self.tabs.count {
-            self.tabs[i].tag -= 1
-        }
-        self.currentTabIndex -= 1
-        self.delegate?.addressBarAndTabView(tabRemoved: tabToClose, atIndex: index)
-        tabToClose.alphaValue = 0
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.3
-            context.allowsImplicitAnimation = true
-//            tabToClose.alphaValue = 0
-            layoutTabs()
-            self.tabContainerScrollView?.documentView?.subviews.remove(at: index)
-            self.layoutSubtreeIfNeeded()
-        }
-        if self.currentTabIndex < 0 && !self.tabs.isEmpty { self.currentTabIndex = 0 }
-        if self.currentTabIndex < 0 && self.tabs.isEmpty {
-            self.addressBarAndSearchField.stringValue = ""
-            self.btnReload.isHidden = true
-            self.btnStopLoad.isHidden = true
-        }
     }
     
     @objc func loadURL(_ sender: NSSearchField) {
@@ -375,27 +375,29 @@ class CompactAddressBarAndTabsView: NSView {
         let url = self.addressBarAndSearchField.stringValue
         guard !url.isEmpty && (url.isValidURL || url.isFileURL) else { return }
         
-        if currentTabIndex < 0 {
+        if self.webViewContainer.currentTabIndex < 0 {
             // we're in an empty state
-            createNewTab(url: self.addressBarAndSearchField.stringValue)
+            self.webViewContainer.appendTab(shouldSwitch: true)
+            self.webViewContainer.tabs[self.webViewContainer.currentTabIndex].isHidden = false
+            self.webViewContainer.tabs[self.webViewContainer.currentTabIndex].navigateTo(url)
         } else {
             // A tab is already selected. We just have to change its url
-            self.tabs[currentTabIndex].navigateTo(url)
-            delegate?.addressBarAndTabView(didSelectTab: self.tabs[currentTabIndex], atIndex: currentTabIndex, fromIndex: currentTabIndex)
+            self.webViewContainer.tabs[self.webViewContainer.currentTabIndex].isHidden = false
+            self.webViewContainer.tabs[self.webViewContainer.currentTabIndex].navigateTo(url)
         }
     }
     
     @objc func reloadCurrentURL() {
         print("reload called")
-        if !self.tabs[currentTabIndex].webView.isLoading {
-            self.tabs[currentTabIndex].webView.reload()
+        if !self.tabs[self.webViewContainer.currentTabIndex].webView.isLoading {
+            self.tabs[self.webViewContainer.currentTabIndex].webView.reload()
         }
     }
     
     @objc func disableLoadingForCurrentURL() {
         print("stop load called")
-        if self.tabs[currentTabIndex].webView.isLoading {
-            self.tabs[currentTabIndex].webView.stopLoading()
+        if self.tabs[self.webViewContainer.currentTabIndex].webView.isLoading {
+            self.tabs[self.webViewContainer.currentTabIndex].webView.stopLoading()
         }
     }
 }

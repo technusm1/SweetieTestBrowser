@@ -39,37 +39,32 @@ class ViewController: NSViewController {
 
 }
 
-extension ViewController: CompactAddressBarAndTabsViewDelegate {
-    func addressBarAndTabView(didSelectTab tab: MKTabView, atIndex index: Int, fromIndex previousIndex: Int) {
-        print("IN THE DELEGATE MAN")
-//        self.view.window?.makeFirstResponder(
-//            self.view.window?.toolbar?.items.first { item in
-//                item.itemIdentifier == .searchBarAndTabStripIdentifier
-//            }?.view?.subviews.first { subView in
-//                subView is NSSearchField
-//            }
-//        )
-        guard let subView = tab.webView else { return }
-        if index >= view.subviews.count {
-            view.addSubview(subView)
-            subView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-            subView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-            subView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-            subView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        }
+extension ViewController: WebViewContainerDelegate {
+    func tabContainer(tabAdded tab: MKWebView, isHidden: Bool) {
+        print("Adding to subview")
+        let subView = tab
+        subView.isHidden = isHidden || (tab.url == nil)
+        view.addSubview(subView)
+        subView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        subView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+        subView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        subView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+    }
+    
+    func tabContainer(didSelectTab tab: MKWebView, atIndex index: Int, fromIndex previousIndex: Int) {
+        print("IN THE DELEGATE MAN", index, previousIndex)
         
         if previousIndex >= 0 {
             view.subviews[previousIndex].isHidden = true
         }
-        if tab.currentURL.isEmpty {
-            tab.webView.isHidden = true
-            return
+        if tab.isLoading || tab.url != nil {
+            tab.isHidden = false
         } else {
-            tab.webView.isHidden = false
+            tab.isHidden = true
         }
     }
     
-    func addressBarAndTabView(tabRemoved tab: MKTabView, atIndex index: Int) {
+    func tabContainer(tabRemoved tab: MKWebView, atIndex index: Int) {
         view.subviews.remove(at: index)
 //        self.view.window?.makeFirstResponder(
 //            self.view.window?.toolbar?.items.first { item in

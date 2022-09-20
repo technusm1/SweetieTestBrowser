@@ -8,9 +8,8 @@
 import Cocoa
 
 class MKWindowController: NSWindowController {
-    
-    var addressBarToolbarItem: NSToolbarItem?
     var titlebarAccessoryViewController: ProgressIndicatorTitlebarAccessoryViewController?
+    var webViewContainer: WebViewContainer = WebViewContainer()
     
     override func windowDidLoad() {
         print("Setting window title...")
@@ -32,13 +31,14 @@ class MKWindowController: NSWindowController {
             self.window?.setFrame(frameRect, display: true, animate: true)
         }
         configureToolbar()
-        self.window?.makeFirstResponder(
-            self.window?.toolbar?.items.first { item in
-                item.itemIdentifier == .searchBarAndTabStripIdentifier
-            }?.view?.subviews.first { subView in
-                subView is NSSearchField
-            }
-        )
+        webViewContainer.delegate = self.window?.contentViewController as? ViewController
+//        self.window?.makeFirstResponder(
+//            self.window?.toolbar?.items.first { item in
+//                item.itemIdentifier == .searchBarAndTabStripIdentifier
+//            }?.view?.subviews.first { subView in
+//                subView is NSSearchField
+//            }
+//        )
         configureTitlebarAccessoryView()
     }
     
@@ -79,6 +79,7 @@ extension MKWindowController: NSToolbarDelegate {
         guard let toolbarItem = userInfo["item"] as? NSToolbarItem else { return }
         if toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier {
             toolbarItem.minSize.width = self.window!.frame.width / 1.7
+            (toolbarItem.view as? CompactAddressBarAndTabsView)?.reloadData()
         }
     }
     
@@ -93,20 +94,19 @@ extension MKWindowController: NSToolbarDelegate {
     @objc func toolbarNavigationPressed(_ sender: Any) {
         guard let sender = sender as? NSToolbarItem else { return }
         print("Hit detect toolbar")
+        guard webViewContainer.currentTabIndex >= 0 else { return }
         if sender.label == "Back" {
             // Back button pressed
-            (self.addressBarToolbarItem?.view as? CompactAddressBarAndTabsView)?.goBack()
+            webViewContainer.tabs[webViewContainer.currentTabIndex].goBack(sender)
         } else if sender.label == "Forward" {
             // Forward button pressed
-            (self.addressBarToolbarItem?.view as? CompactAddressBarAndTabsView)?.goForward()
+            webViewContainer.tabs[webViewContainer.currentTabIndex].goForward(sender)
         }
     }
     
     @objc func newTabBtnPressed(_ sender: Any) {
         print("Adding New Tab")
-        (self.window?.toolbar?.items.first(where: { toolbarItem in
-            toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
-        })?.view as? CompactAddressBarAndTabsView)?.createNewTab(url: nil)
+        webViewContainer.appendTab(shouldSwitch: true)
     }
     
     @objc func bringWindowFromWCAtIndex(_ sender: NSMenuItem) {
@@ -196,26 +196,14 @@ extension MKWindowController: NSToolbarDelegate {
             return toolbarItem
             
         case .searchBarAndTabStripIdentifier:
-            print("item requested")
-            print((toolbar as! MKToolbar).isCustomizing, toolbar.customizationPaletteIsRunning)
-            print("nil = \(addressBarToolbarItem == nil)")
-            print((addressBarToolbarItem?.view as? CompactAddressBarAndTabsView)?.tabs.count)
-            
-            if (toolbar as! MKToolbar).isCustomizing || addressBarToolbarItem == nil {
-                print("IF CASE")
-                let item = NSToolbarItem(itemIdentifier: itemIdentifier)
-                item.visibilityPriority = .user
-                let compactAddressBarAndTabsView = CompactAddressBarAndTabsView(frame: CGRect(x: 0, y: 0, width: self.window!.frame.width / 1.7, height: 30))
-                compactAddressBarAndTabsView.autoresizingMask = [.width]
-                compactAddressBarAndTabsView.delegate = self.contentViewController as? CompactAddressBarAndTabsViewDelegate
-                item.view = compactAddressBarAndTabsView
-                item.minSize.width = self.window!.frame.width / 1.7
-                addressBarToolbarItem = ((toolbar as! MKToolbar).isCustomizing) ? addressBarToolbarItem : item
-                return item
-            } else {
-                self.addressBarToolbarItem?.minSize.width = self.window!.frame.width / 1.7
-                return addressBarToolbarItem
-            }
+            let item = NSToolbarItem(itemIdentifier: itemIdentifier)
+            item.visibilityPriority = .user
+            let compactAddressBarAndTabsView = CompactAddressBarAndTabsView(frame: CGRect(x: 0, y: 0, width: self.window!.frame.width / 1.7, height: 30), webViewContainer: self.webViewContainer)
+            compactAddressBarAndTabsView.autoresizingMask = [.width]
+            compactAddressBarAndTabsView.heightAnchor.constraint(equalToConstant: 30).isActive = true
+            item.view = compactAddressBarAndTabsView
+            item.minSize.width = self.window!.frame.width / 1.7
+            return item
             
         case .newTabButtonIdentifier:
             let toolbarItem = NSToolbarItem(itemIdentifier: itemIdentifier)
@@ -283,7 +271,7 @@ extension MKWindowController: NSWindowDelegate {
     func windowDidResize(_ notification: Notification) {
         for item in self.window?.toolbar?.items ?? [] {
             if item.itemIdentifier == .searchBarAndTabStripIdentifier {
-                self.addressBarToolbarItem?.minSize.width = self.window!.frame.width / 1.7
+                item.minSize.width = self.window!.frame.width / 1.7
             }
         }
     }
