@@ -326,6 +326,7 @@ class CompactAddressBarAndTabsView: NSView {
         guard let userInfo = notification.userInfo as? [String : AnyObject] else { return }
         guard let webView = userInfo["webView"] as? MKWebView else { return }
         let tab = self.tabs.remove(at: webView.tag)
+        tab.isSelected = false
         self.tabContainerScrollView?.documentView?.subviews.remove(at: webView.tag)
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.3
@@ -339,7 +340,8 @@ class CompactAddressBarAndTabsView: NSView {
         guard self.webViewContainer.id == (notification.object as? WebViewContainer)?.id else { return }
         guard let userInfo = notification.userInfo as? [String : Int] else { return }
         let oldValue = userInfo["oldIndex"] ?? -1
-        if oldValue >= 0 {
+        print("switch triggered:", oldValue, self.webViewContainer.currentTabIndex)
+        if oldValue >= 0 && oldValue < tabs.count && !tabs.isEmpty {
             self.tabs[oldValue].isSelected = false
         }
         if self.webViewContainer.currentTabIndex >= 0 {
@@ -349,6 +351,7 @@ class CompactAddressBarAndTabsView: NSView {
             self.addressBarAndSearchField.stringValue = ""
             self.btnReload.isHidden = true
             self.btnStopLoad.isHidden = true
+            (self.window?.windowController as? MKWindowController)?.titlebarAccessoryViewController?.isHidden = true
         }
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.3

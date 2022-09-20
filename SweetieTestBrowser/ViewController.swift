@@ -54,7 +54,7 @@ extension ViewController: WebViewContainerDelegate {
     func tabContainer(didSelectTab tab: MKWebView, atIndex index: Int, fromIndex previousIndex: Int) {
         print("IN THE DELEGATE MAN", index, previousIndex)
         
-        if previousIndex >= 0 {
+        if previousIndex >= 0 && previousIndex < view.subviews.count && !view.subviews.isEmpty {
             view.subviews[previousIndex].isHidden = true
         }
         if tab.isLoading || tab.url != nil {

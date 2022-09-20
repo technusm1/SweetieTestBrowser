@@ -78,7 +78,7 @@ extension MKWindowController: NSToolbarDelegate {
         guard let userInfo = notification.userInfo as? [String : Any] else { return }
         guard let toolbarItem = userInfo["item"] as? NSToolbarItem else { return }
         if toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier {
-            toolbarItem.minSize.width = self.window!.frame.width / 1.7
+            toolbarItem.minSize.width = self.window!.frame.width / 1.65
             (toolbarItem.view as? CompactAddressBarAndTabsView)?.reloadData()
         }
     }
@@ -198,11 +198,11 @@ extension MKWindowController: NSToolbarDelegate {
         case .searchBarAndTabStripIdentifier:
             let item = NSToolbarItem(itemIdentifier: itemIdentifier)
             item.visibilityPriority = .user
-            let compactAddressBarAndTabsView = CompactAddressBarAndTabsView(frame: CGRect(x: 0, y: 0, width: self.window!.frame.width / 1.7, height: 30), webViewContainer: self.webViewContainer)
+            let compactAddressBarAndTabsView = CompactAddressBarAndTabsView(frame: CGRect(x: 0, y: 0, width: self.window!.frame.width / 1.65, height: 30), webViewContainer: self.webViewContainer)
             compactAddressBarAndTabsView.autoresizingMask = [.width]
             compactAddressBarAndTabsView.heightAnchor.constraint(equalToConstant: 30).isActive = true
             item.view = compactAddressBarAndTabsView
-            item.minSize.width = self.window!.frame.width / 1.7
+            item.minSize.width = self.window!.frame.width / 1.65
             return item
             
         case .newTabButtonIdentifier:
@@ -271,7 +271,7 @@ extension MKWindowController: NSWindowDelegate {
     func windowDidResize(_ notification: Notification) {
         for item in self.window?.toolbar?.items ?? [] {
             if item.itemIdentifier == .searchBarAndTabStripIdentifier {
-                item.minSize.width = self.window!.frame.width / 1.7
+                item.minSize.width = self.window!.frame.width / 1.65
             }
         }
     }

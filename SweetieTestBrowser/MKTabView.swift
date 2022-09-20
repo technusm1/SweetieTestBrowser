@@ -174,6 +174,17 @@ class MKTabView: NSView {
     }
     
     private func setupTabView() {
+        
+        // Setup an empty webview
+        self.webView = self._webView ?? MKWebView()
+        self.webView.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
+        self.webView.translatesAutoresizingMaskIntoConstraints = false
+        self.webView.allowsBackForwardNavigationGestures = true
+        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.estimatedProgress), options: .new, context: nil)
+        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.title), options: .new, context: nil)
+        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.url), options: .new, context: nil)
+        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.isLoading), options: .new, context: nil)
+        
         // Init close btn
         closeBtn.target = self
         closeBtn.action = #selector(closeAction)
@@ -185,7 +196,7 @@ class MKTabView: NSView {
         // Init title
         self.titleLabel = NSTextField()
         self.titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        self.titleLabel.stringValue = (title == "" ? "Untitled Page" + String(repeating: " ", count: 15) : title)
+        self.titleLabel.stringValue = (webView.title?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true) ? (title == "" ? "Untitled Page" + String(repeating: " ", count: 15) : title) : (webView.title! + String(repeating: " ", count: 15))
         self.titleLabel.alignment = .left
         self.titleLabel.lineBreakMode = .byTruncatingTail
         self.titleLabel.setContentCompressionResistancePriority(.fittingSizeCompression, for: .horizontal)
@@ -203,6 +214,25 @@ class MKTabView: NSView {
         self.favIconImageView.image = favIcon ?? NSImage(named: NSImage.homeTemplateName)!
         self.favIconImageView.imageScaling = .scaleProportionallyDown
         addSubview(self.favIconImageView)
+        
+        if let webViewURL = webView.url {
+            if !webViewURL.absoluteString.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                DispatchQueue.global(qos: .userInitiated).async {
+                    FaviconFinder(url: webViewURL).downloadFavicon { result in
+                        switch result {
+                        case .success(let favicon):
+                            print("URL of Favicon: \(favicon.url)")
+                            DispatchQueue.main.async {
+                                self.favIconImageView.image = favicon.image
+                            }
+                            
+                        case .failure(let error):
+                            print("Error: \(error)")
+                        }
+                    }
+                }
+            }
+        }
         
         // Setup constraints for controls
         self.favIconLeadingConstraint = self.favIconImageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 4)
@@ -223,16 +253,6 @@ class MKTabView: NSView {
         self.titleLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -4).isActive = true
         self.titleLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
         //        titleLabel.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
-        
-        // Setup an empty webview
-        self.webView = self._webView ?? MKWebView()
-        self.webView.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
-        self.webView.translatesAutoresizingMaskIntoConstraints = false
-        self.webView.allowsBackForwardNavigationGestures = true
-        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.estimatedProgress), options: .new, context: nil)
-        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.title), options: .new, context: nil)
-        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.url), options: .new, context: nil)
-        self.webView.addObserver(self, forKeyPath: #keyPath(MKWebView.isLoading), options: .new, context: nil)
     }
     
     required init?(coder: NSCoder) {

@@ -15,11 +15,9 @@ class WebViewContainer: NSObject {
     var tabs: [MKWebView] = []
     var currentTabIndex: Int = -1 {
         didSet {
-            if currentTabIndex == oldValue { return }
             let nc = NotificationCenter.default
             let userInfo = ["newIndex" : currentTabIndex, "oldIndex" : oldValue]
             nc.post(name: .tabSwitched, object: self, userInfo: userInfo)
-            
             if currentTabIndex < 0 || currentTabIndex >= tabs.count { return }
             delegate?.tabContainer(didSelectTab: tabs[currentTabIndex], atIndex: currentTabIndex, fromIndex: oldValue)
         }
@@ -50,14 +48,18 @@ class WebViewContainer: NSObject {
         for idx in index..<tabs.count {
             tabs[idx].tag -= 1
         }
-        
-        currentTabIndex -= 1
-        if !tabs.isEmpty && currentTabIndex < 0 { currentTabIndex = 0 }
-        
         let nc = NotificationCenter.default
         let userInfo = ["webView" : removedWebView]
         nc.post(name: .tabDeleted, object: self, userInfo: userInfo)
         delegate?.tabContainer(tabRemoved: removedWebView, atIndex: index)
+        
+        if currentTabIndex > 0 {
+            currentTabIndex -= 1
+        } else if tabs.isEmpty {
+            currentTabIndex = -1
+        } else {
+            currentTabIndex = 0
+        }
     }
     
     func switchToTab(atIndex index: Int) {
