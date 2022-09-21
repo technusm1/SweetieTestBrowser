@@ -196,7 +196,7 @@ class MKTabView: NSView {
         // Init title
         self.titleLabel = NSTextField()
         self.titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        self.titleLabel.stringValue = (webView.title?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true) ? (title == "" ? "Untitled Page" + String(repeating: " ", count: 15) : title) : (webView.title! + String(repeating: " ", count: 15))
+        self.titleLabel.stringValue = (webView.title?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true) ? (title == "" ? "Untitled Page" + String(repeating: " ", count: 15) : title) : (webView.title! + String(repeating: " ", count: 25))
         self.titleLabel.alignment = .left
         self.titleLabel.lineBreakMode = .byTruncatingTail
         self.titleLabel.setContentCompressionResistancePriority(.fittingSizeCompression, for: .horizontal)
