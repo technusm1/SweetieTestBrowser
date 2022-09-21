@@ -88,7 +88,7 @@ class MKTabView: NSView {
     var _webView: MKWebView?
     var webView: MKWebView!
     
-    var mouseHoldingDelay: TimeInterval = 0.75
+    var mouseHoldingDelay: TimeInterval = 0.5
     var timer: Timer?
     
     override var mouseDownCanMoveWindow: Bool {

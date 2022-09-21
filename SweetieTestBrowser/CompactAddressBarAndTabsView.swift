@@ -168,6 +168,11 @@ class CompactAddressBarAndTabsView: NSView {
         self.addressBarAndSearchField.sendsSearchStringImmediately = false
         self.addressBarAndSearchField.wantsLayer = true
         
+        // Hide the cancel button
+        if let cell = self.addressBarAndSearchField.cell as? NSSearchFieldCell {
+            cell.cancelButtonCell = nil
+        }
+        
         addSubview(self.addressBarAndSearchField)
         
         let reloadButton = NSButton(image: NSImage(named: NSImage.refreshTemplateName)!, target: self, action: #selector(reloadCurrentURL))
@@ -231,7 +236,7 @@ class CompactAddressBarAndTabsView: NSView {
             
             // Setup reload and stopLoad buttons
             self.btnReload.centerYAnchor.constraint(equalTo: self.addressBarAndSearchField.centerYAnchor),
-            self.btnReload.trailingAnchor.constraint(equalTo: self.addressBarAndSearchField.trailingAnchor, constant: -24),
+            self.btnReload.trailingAnchor.constraint(equalTo: self.addressBarAndSearchField.trailingAnchor, constant: -6),
             self.btnStopLoad.centerYAnchor.constraint(equalTo: self.btnReload.centerYAnchor),
             self.btnStopLoad.centerXAnchor.constraint(equalTo: self.btnReload.centerXAnchor)
         ]
