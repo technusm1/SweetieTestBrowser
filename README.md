@@ -10,10 +10,11 @@ A barebones working browser, created as part of a recruitment challenge that mee
 - Just a barebones browser that works.
 - `target=_blank` hyperlinks supported.
 - File selection and upload supported.
+- Toolbar customization supported.
+- Multi-window support, including dragging a tab from one window to another.
 
 ## Limitations
-- Toolbar is not customizable.
-- Basically any features one would expect from a modern web browser, including downloading, multi-window support and tab shifting, haven't been implemented yet. I have a mind to incorporate the downloading part using another one of my projects: MK-Downloader, but its written in SwiftUI (the challenge required AppKit).
+- Basically any features one would expect from a modern web browser, such as downloading content etc., haven't been implemented yet. I have a mind to incorporate this feature using another one of my projects: MK-Downloader, but its written in SwiftUI (the challenge required AppKit).
 
 ## Installation
 - Download the latest version of the app (DMG) from this link: https://github.com/technusm1/SweetieTestBrowser/releases/download/1.0-alpha1/SweetieTestBrowser.dmg
@@ -26,6 +27,6 @@ Demo can be watched on the following youtube link (please see description and ch
 [![Watch the video](https://img.youtube.com/vi/MwlMwmiVcAs/default.jpg)](https://youtu.be/MwlMwmiVcAs)
 
 ## Implemention details and credits
-- The app components are laid out using Auto Layout for most part, because it simplifies things. All views have `translatesAutoresizingMaskIntoConstraints` set to `false`, and constraints are properly defined for each one. This allows to handle things like window resizing properly, out of the box and reliably handles all UI adjustment, including animations.
+- The app components are laid out using Auto Layout for most part, because it simplifies things. Almost all views have `translatesAutoresizingMaskIntoConstraints` set to `false`, and constraints are properly defined for each one. This allows to handle things like window resizing properly, out of the box and reliably handles UI adjustment, including animations.
 - [FaviconFinder](https://github.com/will-lumley/FaviconFinder/) library is used to asynchronously fetch FavIcon for a website and display it on tab. The app uses v3.3.0 of this library since it is compatible with macOS 10.14.
 - [Customize the contextual menu of WKWebView on macOS - iCab Blog](https://icab.de/blog/2022/06/12/customize-the-contextual-menu-of-wkwebview-on-macos/)
