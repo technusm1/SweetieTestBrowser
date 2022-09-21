@@ -175,7 +175,11 @@ extension MKWindowController: NSToolbarDelegate {
             let toolbarItem = NSToolbarItem(itemIdentifier: itemIdentifier)
             
             let popupBtn = NSButton()
-            popupBtn.title = self.window?.title ?? "Untitled Window"
+            let title: String = self.window?.title ?? "Untitled Window"
+            
+            let attrs = [NSAttributedString.Key.font : NSFont.systemFont(ofSize: NSFont.systemFontSize(for: .regular) - 1, weight: .semibold)]
+            let attributedString = NSMutableAttributedString(string: title, attributes: attrs)
+            popupBtn.attributedTitle = attributedString
             popupBtn.target = self
             popupBtn.action = #selector(popupWindowsListMenu)
             popupBtn.bezelStyle = .texturedRounded
