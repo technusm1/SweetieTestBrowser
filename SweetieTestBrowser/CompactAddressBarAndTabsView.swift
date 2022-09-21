@@ -364,16 +364,13 @@ class CompactAddressBarAndTabsView: NSView {
         let tab = makeTabView(from: webView)
         self.tabs.append(tab)
         self.tabContainerScrollView?.documentView?.addSubview(tab)
-        // This may not switch to a new tab automatically, so we need to call layoutTabs
-        if !shouldSwitch {
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.3
-                context.allowsImplicitAnimation = true
-                layoutTabs()
-                self.layoutSubtreeIfNeeded()
-            }
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.3
+            context.allowsImplicitAnimation = true
+            layoutTabs()
+            self.layoutSubtreeIfNeeded()
         }
-        //        scrollToTabInScrollView()
+        scrollToTabInScrollView()
     }
     
     @objc func tabDeletedNotification(_ notification: Notification) {
@@ -417,8 +414,11 @@ class CompactAddressBarAndTabsView: NSView {
     }
     
     func scrollToTabInScrollView() {
-        guard let width = tabContainerScrollView?.frame.size.width else { return }
-        tabContainerScrollView?.contentView.scroll(NSPoint(x: width, y: 0))
+        if tabs.count >= 11 {
+            guard let width = tabContainerScrollView?.documentView?.frame.size.width else { return }
+            tabContainerScrollView?.contentView.scroll(NSPoint(x: width, y: 0))
+        }
+        
     }
     
     @objc func loadURL(_ sender: NSSearchField) {
