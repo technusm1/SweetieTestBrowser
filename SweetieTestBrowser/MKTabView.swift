@@ -91,6 +91,12 @@ class MKTabView: NSView {
     var mouseHoldingDelay: TimeInterval = 0.75
     var timer: Timer?
     
+    override var mouseDownCanMoveWindow: Bool {
+        get {
+            return false
+        }
+    }
+    
     @objc func closeAction() {
         onClose?()
     }
@@ -193,7 +199,6 @@ class MKTabView: NSView {
     }
     
     private func setupTabView() {
-        
         // Setup an empty webview
         self.webView = self._webView ?? MKWebView()
         self.webView.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15"
