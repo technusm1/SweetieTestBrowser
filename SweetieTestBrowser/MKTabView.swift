@@ -88,6 +88,9 @@ class MKTabView: NSView {
     var _webView: MKWebView?
     var webView: MKWebView!
     
+    var mouseHoldingDelay: TimeInterval = 1
+    var timer: Timer?
+    
     @objc func closeAction() {
         onClose?()
     }
@@ -103,9 +106,25 @@ class MKTabView: NSView {
         Self.currentlyHoveredTabView = nil
     }
     
+    @objc func mouseWasHeld(timer: Timer) {
+        guard let event = timer.userInfo as? NSEvent else { return }
+        let pasteboardItem = NSPasteboardItem()
+        guard let appDelegate = NSApplication.shared.delegate as? AppDelegate else { return }
+        guard let wc = self.window?.windowController as? MKWindowController else { return }
+        pasteboardItem.setString("WebView[\(appDelegate.wcList.firstIndex(of: wc)!)][\(self.webView.tag)]", forType: .string)
+        let draggingItem = NSDraggingItem(pasteboardWriter: pasteboardItem)
+        draggingItem.setDraggingFrame(self.bounds, contents: self.imageRepresentation())
+        self.beginDraggingSession(with: [draggingItem], event: event, source: self)
+    }
+    
     public override func mouseDown(with event: NSEvent) {
         isSelected = true
         onSelect?()
+        timer = Timer.scheduledTimer(timeInterval: mouseHoldingDelay, target: self, selector: #selector(mouseWasHeld(timer:)), userInfo: event, repeats: false)
+    }
+    
+    public override func mouseUp(with event: NSEvent) {
+        timer?.invalidate()
     }
     
     private func makeTrackingArea() -> NSTrackingArea {
@@ -286,3 +305,24 @@ class MKTabView: NSView {
         super.draw(dirtyRect)
     }
 }
+
+extension MKTabView: NSDraggingSource {
+    func draggingSession(_ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation {
+        if context == .withinApplication { return .generic }
+        return NSDragOperation()
+    }
+    
+    func imageRepresentation() -> NSImage? {
+        let viewSize = self.bounds.size
+        let imgSize = NSSize(width: viewSize.width, height: viewSize.height)
+        
+        guard let bitmapImgRep = self.bitmapImageRepForCachingDisplay(in: self.bounds) else { return nil }
+        bitmapImgRep.size = imgSize
+        self.cacheDisplay(in: self.bounds, to: bitmapImgRep)
+        
+        let image = NSImage()
+        image.addRepresentation(bitmapImgRep)
+        return image
+    }
+}
+

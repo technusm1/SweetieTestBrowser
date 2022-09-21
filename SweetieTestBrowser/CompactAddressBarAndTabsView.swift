@@ -27,6 +27,12 @@ class CompactAddressBarAndTabsView: NSView {
     var lessThan12TabsConstraintsStorage: [NSLayoutConstraint] = []
     var moreThan12TabsConstraintsStorage: [NSLayoutConstraint] = []
     
+    var isReceivingDrag = false {
+        didSet {
+            needsDisplay = true
+        }
+    }
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -51,9 +57,58 @@ class CompactAddressBarAndTabsView: NSView {
             layoutTabs()
             self.layoutSubtreeIfNeeded()
         }
+        // Drag operation code (This view is a dragging destination for receiving tabs)
+        registerForDraggedTypes([.string])
+        
         NotificationCenter.default.addObserver(self, selector: #selector(self.tabAppendedNotification(_:)), name: .tabAppended, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.tabDeletedNotification(_:)), name: .tabDeleted, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.tabSwitchedNotification(_:)), name: .tabSwitched, object: nil)
+    }
+    
+    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        print("drag entered")
+        isReceivingDrag = true
+        return .copy
+    }
+    
+    override func draggingExited(_ sender: NSDraggingInfo?) {
+        print("drag exit")
+        isReceivingDrag = false
+    }
+    
+    override func prepareForDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        print("prepping for drag")
+        return true
+    }
+    
+    override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        print("performing drag operation. will not be accepting any drags for the time being")
+        isReceivingDrag = false
+        let pasteboard = sender.draggingPasteboard
+        if let destinationStrArray = pasteboard.readObjects(forClasses: [NSString.self]) as? [NSString], !destinationStrArray.isEmpty {
+            // processing for received data should be done here
+            let result = destinationStrArray[0] as String
+            let groups = result.groups(for: #"([\d+])"#)
+            if groups.count != 2 { return false }
+            guard let appDelegate = NSApplication.shared.delegate as? AppDelegate else { return false }
+            guard let sourceWCIndex = Int(groups[0][0]), let sourceWebviewIndex = Int(groups[1][0]) else { return false }
+            let sourceWC = appDelegate.wcList[sourceWCIndex].webViewContainer
+            
+            let webView = sourceWC.tabs[sourceWebviewIndex]
+            sourceWC.deleteTab(atIndex: sourceWebviewIndex)
+            self.webViewContainer.appendTab(webView: webView, shouldSwitch: true)
+        }
+        return false // otherwise, we have rejected the drag operation
+    }
+    
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        if isReceivingDrag {
+            NSColor.selectedControlColor.set()
+            let path = NSBezierPath(rect:bounds)
+            path.lineWidth = 5.0
+            path.stroke()
+        }
     }
     
     private func makeTabView(from webView: MKWebView) -> MKTabView {
@@ -318,7 +373,7 @@ class CompactAddressBarAndTabsView: NSView {
                 self.layoutSubtreeIfNeeded()
             }
         }
-//        scrollToTabInScrollView()
+        //        scrollToTabInScrollView()
     }
     
     @objc func tabDeletedNotification(_ notification: Notification) {
@@ -401,6 +456,29 @@ class CompactAddressBarAndTabsView: NSView {
         print("stop load called")
         if self.tabs[self.webViewContainer.currentTabIndex].webView.isLoading {
             self.tabs[self.webViewContainer.currentTabIndex].webView.stopLoading()
+        }
+    }
+}
+
+extension String {
+    func groups(for regexPattern: String) -> [[String]] {
+        do {
+            let text = self
+            let regex = try NSRegularExpression(pattern: regexPattern)
+            let matches = regex.matches(in: text,
+                                        range: NSRange(text.startIndex..., in: text))
+            return matches.map { match in
+                return (0..<match.numberOfRanges).map {
+                    let rangeBounds = match.range(at: $0)
+                    guard let range = Range(rangeBounds, in: text) else {
+                        return ""
+                    }
+                    return String(text[range])
+                }
+            }
+        } catch let error {
+            print("invalid regex: \(error.localizedDescription)")
+            return []
         }
     }
 }

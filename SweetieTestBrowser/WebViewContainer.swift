@@ -24,8 +24,8 @@ class WebViewContainer: NSObject {
     }
     var delegate: WebViewContainerDelegate?
     
-    func appendTab(shouldSwitch: Bool = false) {
-        let webView = MKWebView()
+    func appendTab(webView: MKWebView? = nil, shouldSwitch: Bool = false) {
+        let webView = webView ?? MKWebView()
         webView.navigationDelegate = self
         webView.uiDelegate = self
         webView.tag = tabs.count
