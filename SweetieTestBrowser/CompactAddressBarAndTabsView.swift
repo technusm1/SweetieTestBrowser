@@ -364,13 +364,14 @@ class CompactAddressBarAndTabsView: NSView {
         let tab = makeTabView(from: webView)
         self.tabs.append(tab)
         self.tabContainerScrollView?.documentView?.addSubview(tab)
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.3
-            context.allowsImplicitAnimation = true
-            layoutTabs()
-            self.layoutSubtreeIfNeeded()
+        if !shouldSwitch {
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.3
+                context.allowsImplicitAnimation = true
+                layoutTabs()
+                self.layoutSubtreeIfNeeded()
+            }
         }
-        scrollToTabInScrollView()
     }
     
     @objc func tabDeletedNotification(_ notification: Notification) {
@@ -410,13 +411,32 @@ class CompactAddressBarAndTabsView: NSView {
             context.allowsImplicitAnimation = true
             layoutTabs()
             self.layoutSubtreeIfNeeded()
+            scrollToTab(atIndex: self.webViewContainer.currentTabIndex)
         }
     }
     
-    func scrollToTabInScrollView() {
+    func scrollToEndOfTabContainerScrollView() {
         if tabs.count >= 11 {
             guard let width = tabContainerScrollView?.documentView?.frame.size.width else { return }
             tabContainerScrollView?.contentView.scroll(NSPoint(x: width, y: 0))
+        }
+    }
+    
+    func scrollToBeginningOfTabContainerScrollView() {
+        if tabs.count >= 11 {
+            tabContainerScrollView?.contentView.scroll(NSPoint(x: 0, y: 0))
+        }
+    }
+    
+    func scrollToTab(atIndex index: Int) {
+        guard tabs.count >= 11 else { return }
+        if index == tabs.count - 1 {
+            scrollToEndOfTabContainerScrollView()
+        } else if index == 0 {
+            scrollToBeginningOfTabContainerScrollView()
+        }
+        else {
+            tabContainerScrollView?.contentView.scrollToVisible(tabs[index].frame)
         }
         
     }
