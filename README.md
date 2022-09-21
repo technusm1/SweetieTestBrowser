@@ -11,7 +11,8 @@ A barebones working browser, created as part of a recruitment challenge that mee
 - `target=_blank` hyperlinks supported.
 - File selection and upload supported.
 - Toolbar customization supported.
-- Multi-window support, including dragging a tab from one window to another.
+- Multi-window support, including dragging a tab from one window to another (rudimentary for now).
+- Dark mode supported (already works from day 1, just forgot mentioning).
 
 ## Limitations
 - Basically any features one would expect from a modern web browser, such as downloading content etc., haven't been implemented yet. I have a mind to incorporate this feature using another one of my projects: MK-Downloader, but its written in SwiftUI (the challenge required AppKit).
