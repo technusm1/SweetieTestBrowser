@@ -34,6 +34,9 @@ class CompactAddressBarAndTabsView: NSView {
             needsDisplay = true
         }
     }
+    var arrowIconUICtrl: NSButton?
+    var dragIndicatorPositions: [CGFloat]
+    var dragIndicatorSelectedIndex: Int = 0
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -43,6 +46,7 @@ class CompactAddressBarAndTabsView: NSView {
         self.addressBarAndSearchField = NSSearchField(frame: frameRect)
         self.webViewContainer = webViewContainer
         self.tabs = []
+        self.dragIndicatorPositions = []
         super.init(frame: frameRect)
         for (idx, webView) in webViewContainer.tabs.enumerated() {
             let tab = makeTabView(from: webView)
@@ -59,6 +63,7 @@ class CompactAddressBarAndTabsView: NSView {
             layoutTabs()
             self.layoutSubtreeIfNeeded()
         }
+        setupDragIndicatorPositions()
         // Drag operation code (This view is a dragging destination for receiving tabs)
         registerForDraggedTypes([.string])
         
@@ -75,24 +80,55 @@ class CompactAddressBarAndTabsView: NSView {
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
         print("drag entered")
         isReceivingDrag = true
+        self.arrowIconUICtrl = self.arrowIconUICtrl ?? NSButton()
+        self.arrowIconUICtrl?.title = "⬆"
+        self.arrowIconUICtrl?.isHidden = false
+        self.arrowIconUICtrl?.isBordered = false
+        self.superview?.addSubview(self.arrowIconUICtrl!, positioned: .above, relativeTo: self)
+        self.arrowIconUICtrl?.isHidden = false
+        
+        return .copy
+    }
+    
+    private func setupDragIndicatorPositions() {
+        print("Setup drag indicator positions")
+        self.dragIndicatorPositions.removeAll()
+        self.dragIndicatorPositions = [self.addressBarAndSearchField.frame.width]
+        for i in 0..<tabs.count {
+            let result = (tabs[0].frame.width + 5.0)*Double(i + 1) + self.addressBarAndSearchField.frame.width
+            self.dragIndicatorPositions.append(result)
+        }
+        
+        // self.arrowIconUICtrl?.frame = NSRect(origin: CGPoint(x: xPoint, y: -8), size: CGSize(width: 30, height: 30))
+    }
+    
+    override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        let dragCoordinates = convert(sender.draggingLocation, from: self.window?.contentView)
+        print(dragCoordinates, self.dragIndicatorPositions)
+        if let index = self.dragIndicatorPositions.firstIndex(where: { position in
+            dragCoordinates.x < position
+        }) {
+            self.arrowIconUICtrl?.frame = NSRect(origin: CGPoint(x: self.dragIndicatorPositions[index], y: -8), size: CGSize(width: 30, height: 30))
+            self.dragIndicatorSelectedIndex = index
+        } else {
+            self.arrowIconUICtrl?.frame = NSRect(origin: CGPoint(x: self.dragIndicatorPositions.last!, y: -8), size: CGSize(width: 30, height: 30))
+            self.dragIndicatorSelectedIndex = tabs.count
+        }
         return .copy
     }
     
     override func draggingExited(_ sender: NSDraggingInfo?) {
         print("drag exit")
         isReceivingDrag = false
-    }
-    
-    override func prepareForDragOperation(_ sender: NSDraggingInfo) -> Bool {
-        print("prepping for drag")
-        return true
+        self.arrowIconUICtrl?.isHidden = true
+        self.arrowIconUICtrl?.removeFromSuperview()
     }
     
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
         print("performing drag operation. will not be accepting any drags for the time being")
+        self.arrowIconUICtrl?.isHidden = true
         isReceivingDrag = false
         let pasteboard = sender.draggingPasteboard
-        let dragCoordinates = convert(sender.draggingLocation, from: self.window?.contentView)
         if let destinationStrArray = pasteboard.readObjects(forClasses: [NSString.self]) as? [NSString], !destinationStrArray.isEmpty {
             // processing for received data should be done here
             let result = destinationStrArray[0] as String
@@ -104,13 +140,13 @@ class CompactAddressBarAndTabsView: NSView {
             
             let webView = sourceWC.tabs[sourceWebviewIndex]
             sourceWC.deleteTab(atIndex: sourceWebviewIndex, shouldCloseTab: false)
-            print(self.window?.toolbar?.items.first(where: { toolbarItem in
-                toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
-            })?.view?.frame.width)
-            print(self.addressBarAndSearchField.frame.width)
-            print(self.tabs.map { convert($0.frame, to: self).width })
-            print(dragCoordinates)
-            self.webViewContainer.appendTab(webView: webView, shouldSwitch: true)
+            
+            if dragIndicatorSelectedIndex == tabs.count {
+                self.webViewContainer.appendTab(webView: webView, shouldSwitch: true)
+            } else {
+                self.webViewContainer.insertTab(webView: webView, atIndex: dragIndicatorSelectedIndex)
+            }
+            return true
         }
         return false // otherwise, we have rejected the drag operation
     }
@@ -168,6 +204,7 @@ class CompactAddressBarAndTabsView: NSView {
         }
         setupViewConstraints()
         layoutTabs()
+        setupDragIndicatorPositions()
     }
     
     private func setupView() {
@@ -420,6 +457,7 @@ class CompactAddressBarAndTabsView: NSView {
                 layoutTabs()
                 self.layoutSubtreeIfNeeded()
             }
+            setupDragIndicatorPositions()
         }
     }
     
@@ -446,6 +484,7 @@ class CompactAddressBarAndTabsView: NSView {
             layoutTabs()
             self.layoutSubtreeIfNeeded()
         }
+        setupDragIndicatorPositions()
     }
     
     @objc func tabSwitchedNotification(_ notification: Notification) {
@@ -472,6 +511,7 @@ class CompactAddressBarAndTabsView: NSView {
             self.layoutSubtreeIfNeeded()
             scrollToTab(atIndex: self.webViewContainer.currentTabIndex)
         }
+        setupDragIndicatorPositions()
     }
     
     func scrollToEndOfTabContainerScrollView() {

@@ -25,11 +25,20 @@ class WebViewContainer: NSObject {
     var delegate: WebViewContainerDelegate?
     
     func insertTab(webView: MKWebView, atIndex index: Int) {
+        webView.uiDelegate = self
+        webView.navigationDelegate = self
+        webView.tag = index
         tabs.insert(webView, at: index)
+        for i in index+1..<tabs.count {
+            tabs[i].tag += 1
+        }
         let nc = NotificationCenter.default
         let userInfo: [String : Any] = ["webView" : webView, "index" : index]
-        nc.post(name: .tabAppended, object: self, userInfo: userInfo)
+        nc.post(name: .tabInserted, object: self, userInfo: userInfo)
         delegate?.tabContainer(tabInserted: webView, atIndex: index)
+        if currentTabIndex >= index {
+            currentTabIndex += 1
+        }
         currentTabIndex = index
     }
     

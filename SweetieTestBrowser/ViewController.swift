@@ -43,7 +43,7 @@ extension ViewController: WebViewContainerDelegate {
     func tabContainer(tabInserted tab: MKWebView, atIndex index: Int) {
         print("Tab inserted")
         let subView = tab
-        subView.isHidden = (tab.url == nil)
+        subView.isHidden = true
         view.subviews.insert(subView, at: index)
         subView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
         subView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
