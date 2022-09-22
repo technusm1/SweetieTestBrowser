@@ -63,6 +63,8 @@ class WebViewContainer: NSObject {
     func deleteTab(atIndex index: Int, shouldCloseTab: Bool = true) {
         guard currentTabIndex >= 0 && index >= 0 else { return }
         let removedWebView = tabs.remove(at: index)
+        removedWebView.navigationDelegate = nil
+        removedWebView.uiDelegate = nil
         if shouldCloseTab {
             removedWebView.navigateTo("about:blank")
             removedWebView.favIconImage = nil

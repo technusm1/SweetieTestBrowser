@@ -139,13 +139,29 @@ class CompactAddressBarAndTabsView: NSView {
             let sourceWC = appDelegate.wcList[sourceWCIndex].webViewContainer
             
             let webView = sourceWC.tabs[sourceWebviewIndex]
-            sourceWC.deleteTab(atIndex: sourceWebviewIndex, shouldCloseTab: false)
             
-            if dragIndicatorSelectedIndex == tabs.count {
-                self.webViewContainer.appendTab(webView: webView, shouldSwitch: true)
+            if sourceWC.id != self.webViewContainer.id {
+                // Different source and destination windows, no problem
+                sourceWC.deleteTab(atIndex: sourceWebviewIndex, shouldCloseTab: false)
+                if dragIndicatorSelectedIndex == tabs.count {
+                    self.webViewContainer.appendTab(webView: webView, shouldSwitch: true)
+                } else {
+                    self.webViewContainer.insertTab(webView: webView, atIndex: dragIndicatorSelectedIndex)
+                }
             } else {
-                self.webViewContainer.insertTab(webView: webView, atIndex: dragIndicatorSelectedIndex)
+                // Same source and destination
+                if dragIndicatorSelectedIndex == tabs.count {
+                    self.webViewContainer.deleteTab(atIndex: sourceWebviewIndex, shouldCloseTab: false)
+                    self.webViewContainer.appendTab(webView: webView, shouldSwitch: true)
+                } else if dragIndicatorSelectedIndex <= sourceWebviewIndex - 1 {
+                    self.webViewContainer.deleteTab(atIndex: sourceWebviewIndex, shouldCloseTab: false)
+                    self.webViewContainer.insertTab(webView: webView, atIndex: dragIndicatorSelectedIndex)
+                } else if dragIndicatorSelectedIndex > sourceWebviewIndex + 1 {
+                    self.webViewContainer.deleteTab(atIndex: sourceWebviewIndex, shouldCloseTab: false)
+                    self.webViewContainer.insertTab(webView: webView, atIndex: dragIndicatorSelectedIndex - 1)
+                }
             }
+            
             return true
         }
         return false // otherwise, we have rejected the drag operation
