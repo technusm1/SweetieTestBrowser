@@ -67,6 +67,10 @@ class CompactAddressBarAndTabsView: NSView {
         NotificationCenter.default.addObserver(self, selector: #selector(self.tabSwitchedNotification(_:)), name: .tabSwitched, object: nil)
     }
     
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
         print("drag entered")
         isReceivingDrag = true

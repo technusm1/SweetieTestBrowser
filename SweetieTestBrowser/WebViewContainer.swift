@@ -72,6 +72,13 @@ class WebViewContainer: NSObject {
     func switchToTab(atIndex index: Int) {
         self.currentTabIndex = (0..<tabs.count).contains(index) ? index : -1
     }
+    
+    deinit {
+        for i in (0..<tabs.count).reversed() {
+            deleteTab(atIndex: i)
+        }
+        tabs.removeAll()
+    }
 }
 
 extension Notification.Name {

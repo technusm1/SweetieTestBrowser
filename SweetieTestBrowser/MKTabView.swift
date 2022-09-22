@@ -290,6 +290,13 @@ class MKTabView: NSView {
         }
         super.draw(dirtyRect)
     }
+    
+    deinit {
+        self.webView.removeObserver(self, forKeyPath: #keyPath(MKWebView.estimatedProgress))
+        self.webView.removeObserver(self, forKeyPath: #keyPath(MKWebView.title))
+        self.webView.removeObserver(self, forKeyPath: #keyPath(MKWebView.url))
+        self.webView.removeObserver(self, forKeyPath: #keyPath(MKWebView.isLoading))
+    }
 }
 
 extension MKTabView: NSDraggingSource {
