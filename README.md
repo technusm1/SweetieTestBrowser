@@ -11,16 +11,16 @@ A barebones working browser, created as part of a recruitment challenge that mee
 - `target=_blank` hyperlinks supported.
 - File selection and upload supported.
 - Toolbar customization supported. Basic functionality like browsing and tab adding and switching works even user has removed the Compact Tabs + Address bar. Though you can't really enter any URLs, so I guess it doesn't serve much as a browser.
-- Multi-window support, including dragging and dropping a tab within the window or from one window to another (not production perfect, but works nicely nonetheless).
 - Dark mode supported (already works from day 1, just forgot mentioning it before).
 - Offline content supported.
+- Multi-window support, including dragging and dropping a tab within the window or from one window to another.
 
 ## Limitations
 - Content downloading is not yet implemented.
-- Tab drag-and-drop requires more features to be fully usable.
+- Tab drag-and-drop requires more features (possibly scrolling on hovering around edges of scrollview) and minor bug fixes (drop indicator arrow is not shown at correct position sometimes) to be fully usable.
 
 ## Installation
-- Download the latest version of the app (DMG) from this link: https://github.com/technusm1/SweetieTestBrowser/releases/download/1.0-alpha1/SweetieTestBrowser.dmg
+- Download the latest version of the app (DMG) from this link: https://github.com/technusm1/SweetieTestBrowser/releases/download/1.0-alpha2/SweetieTestBrowser.dmg
 - Open the DMG.
 - Drag the app into `Applications` folder (shortcut provided in DMG).
 
