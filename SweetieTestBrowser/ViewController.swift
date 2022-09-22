@@ -40,6 +40,17 @@ class ViewController: NSViewController {
 }
 
 extension ViewController: WebViewContainerDelegate {
+    func tabContainer(tabInserted tab: MKWebView, atIndex index: Int) {
+        print("Tab inserted")
+        let subView = tab
+        subView.isHidden = (tab.url == nil)
+        view.subviews.insert(subView, at: index)
+        subView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        subView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+        subView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        subView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+    }
+    
     func tabContainer(tabAdded tab: MKWebView, isHidden: Bool) {
         print("Adding to subview")
         let subView = tab
@@ -66,12 +77,5 @@ extension ViewController: WebViewContainerDelegate {
     
     func tabContainer(tabRemoved tab: MKWebView, atIndex index: Int) {
         view.subviews.remove(at: index)
-//        self.view.window?.makeFirstResponder(
-//            self.view.window?.toolbar?.items.first { item in
-//                item.itemIdentifier == .searchBarAndTabStripIdentifier
-//            }?.view?.subviews.first { subView in
-//                subView is NSSearchField
-//            }
-//        )
     }
 }

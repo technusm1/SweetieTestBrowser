@@ -26,6 +26,10 @@ class WebViewContainer: NSObject {
     
     func insertTab(webView: MKWebView, atIndex index: Int) {
         tabs.insert(webView, at: index)
+        let nc = NotificationCenter.default
+        let userInfo: [String : Any] = ["webView" : webView, "index" : index]
+        nc.post(name: .tabAppended, object: self, userInfo: userInfo)
+        delegate?.tabContainer(tabInserted: webView, atIndex: index)
         currentTabIndex = index
     }
     
@@ -47,11 +51,13 @@ class WebViewContainer: NSObject {
         delegate?.tabContainer(tabAdded: webView, isHidden: !shouldSwitch)
     }
     
-    func deleteTab(atIndex index: Int) {
+    func deleteTab(atIndex index: Int, shouldCloseTab: Bool = true) {
         guard currentTabIndex >= 0 && index >= 0 else { return }
         let removedWebView = tabs.remove(at: index)
-        removedWebView.navigateTo("about:blank")
-        removedWebView.favIconImage = nil
+        if shouldCloseTab {
+            removedWebView.navigateTo("about:blank")
+            removedWebView.favIconImage = nil
+        }
         for idx in index..<tabs.count {
             tabs[idx].tag -= 1
         }
@@ -85,15 +91,14 @@ extension Notification.Name {
     static let tabAppended = Notification.Name("TabAppended")
     static let tabDeleted = Notification.Name("TabDeleted")
     static let tabSwitched = Notification.Name("TabSwitched")
+    static let tabInserted = Notification.Name("TabInserted")
 }
 
 protocol WebViewContainerDelegate {
-    // This method is called when a tab switch happens, or when user enters a new URL in a tab
     func tabContainer(didSelectTab tab: MKWebView, atIndex index: Int, fromIndex previousIndex: Int)
-    // This method is called when a tab is removed, i.e. when tab is closed by the user
     func tabContainer(tabRemoved tab: MKWebView, atIndex index: Int)
-    
     func tabContainer(tabAdded tab: MKWebView, isHidden: Bool)
+    func tabContainer(tabInserted tab: MKWebView, atIndex index: Int)
 }
 
 extension WebViewContainer: WKNavigationDelegate, WKUIDelegate {

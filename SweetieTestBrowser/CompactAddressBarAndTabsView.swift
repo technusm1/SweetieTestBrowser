@@ -65,6 +65,7 @@ class CompactAddressBarAndTabsView: NSView {
         NotificationCenter.default.addObserver(self, selector: #selector(self.tabAppendedNotification(_:)), name: .tabAppended, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.tabDeletedNotification(_:)), name: .tabDeleted, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.tabSwitchedNotification(_:)), name: .tabSwitched, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.tabInsertedNotification(_:)), name: .tabInserted, object: nil)
     }
     
     deinit {
@@ -102,7 +103,7 @@ class CompactAddressBarAndTabsView: NSView {
             let sourceWC = appDelegate.wcList[sourceWCIndex].webViewContainer
             
             let webView = sourceWC.tabs[sourceWebviewIndex]
-            sourceWC.deleteTab(atIndex: sourceWebviewIndex)
+            sourceWC.deleteTab(atIndex: sourceWebviewIndex, shouldCloseTab: false)
             print(self.window?.toolbar?.items.first(where: { toolbarItem in
                 toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
             })?.view?.frame.width)
@@ -420,6 +421,16 @@ class CompactAddressBarAndTabsView: NSView {
                 self.layoutSubtreeIfNeeded()
             }
         }
+    }
+    
+    @objc func tabInsertedNotification(_ notification: Notification) {
+        guard self.webViewContainer.id == (notification.object as? WebViewContainer)?.id else { return }
+        guard let userInfo = notification.userInfo as? [String : AnyObject] else { return }
+        guard let webView = userInfo["webView"] as? MKWebView else { return }
+        guard let index = userInfo["index"] as? Int else { return }
+        let tab = makeTabView(from: webView)
+        self.tabs.insert(tab, at: index)
+        self.tabContainerScrollView?.documentView?.subviews.insert(tab, at: index)
     }
     
     @objc func tabDeletedNotification(_ notification: Notification) {
