@@ -87,6 +87,7 @@ class CompactAddressBarAndTabsView: NSView {
         print("performing drag operation. will not be accepting any drags for the time being")
         isReceivingDrag = false
         let pasteboard = sender.draggingPasteboard
+        let dragCoordinates = convert(sender.draggingLocation, from: self.window?.contentView)
         if let destinationStrArray = pasteboard.readObjects(forClasses: [NSString.self]) as? [NSString], !destinationStrArray.isEmpty {
             // processing for received data should be done here
             let result = destinationStrArray[0] as String
@@ -98,6 +99,12 @@ class CompactAddressBarAndTabsView: NSView {
             
             let webView = sourceWC.tabs[sourceWebviewIndex]
             sourceWC.deleteTab(atIndex: sourceWebviewIndex)
+            print(self.window?.toolbar?.items.first(where: { toolbarItem in
+                toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
+            })?.view?.frame.width)
+            print(self.addressBarAndSearchField.frame.width)
+            print(self.tabs.map { convert($0.frame, to: self).width })
+            print(dragCoordinates)
             self.webViewContainer.appendTab(webView: webView, shouldSwitch: true)
         }
         return false // otherwise, we have rejected the drag operation
@@ -257,8 +264,8 @@ class CompactAddressBarAndTabsView: NSView {
         ]
         
         self.oneOrMoreTabsConstraintsStorage = [
-            self.addressBarAndSearchField.widthAnchor.constraint(lessThanOrEqualTo: self.widthAnchor, multiplier: 0.5),
-            self.addressBarAndSearchField.widthAnchor.constraint(greaterThanOrEqualTo: self.widthAnchor, multiplier: 0.4),
+            self.addressBarAndSearchField.widthAnchor.constraint(lessThanOrEqualTo: self.widthAnchor, multiplier: 0.4),
+            self.addressBarAndSearchField.widthAnchor.constraint(greaterThanOrEqualTo: self.widthAnchor, multiplier: 0.25),
             self.addressBarAndSearchField.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             
             // Scrollview constraints
@@ -282,8 +289,26 @@ class CompactAddressBarAndTabsView: NSView {
         if self.tabs.isEmpty {
             NSLayoutConstraint.deactivate(oneOrMoreTabsConstraintsStorage)
             NSLayoutConstraint.activate(zeroTabsConstraintsStorage)
+            if let win = self.window {
+                win.toolbar?.centeredItemIdentifier = .searchBarAndTabStripIdentifier
+                win.toolbar?.items.first { toolbarItem in
+                    toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
+                }?.minSize.width = win.frame.width / 1.65
+            }
         } else {
             NSLayoutConstraint.deactivate(zeroTabsConstraintsStorage)
+            if let win = self.window {
+                win.toolbar?.centeredItemIdentifier = nil
+                var compactBarWidth = win.frame.width / 1.15
+                for item in win.toolbar?.items ?? [] {
+                    if item.itemIdentifier != .searchBarAndTabStripIdentifier && item.itemIdentifier != .flexibleSpace {
+                        compactBarWidth -= item.minSize.width
+                    }
+                }
+                win.toolbar?.items.first { toolbarItem in
+                    toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
+                }?.minSize.width = compactBarWidth
+            }
         }
         if self.tabs.count >= 1 {
             NSLayoutConstraint.activate(oneOrMoreTabsConstraintsStorage)
