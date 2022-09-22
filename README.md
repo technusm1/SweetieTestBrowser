@@ -15,7 +15,7 @@ A barebones working browser, created as part of a recruitment challenge that mee
 - Dark mode supported (already works from day 1, just forgot mentioning).
 
 ## Limitations
-- Basically any features one would expect from a modern web browser, such as downloading content etc., haven't been implemented yet. I have a mind to incorporate this feature using another one of my projects: MK-Downloader, but its written in SwiftUI (the challenge required AppKit).
+- Content downloading is not yet implemented.
 
 ## Installation
 - Download the latest version of the app (DMG) from this link: https://github.com/technusm1/SweetieTestBrowser/releases/download/1.0-alpha1/SweetieTestBrowser.dmg
