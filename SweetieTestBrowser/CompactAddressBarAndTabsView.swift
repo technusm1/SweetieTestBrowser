@@ -27,6 +27,8 @@ class CompactAddressBarAndTabsView: NSView {
     var lessThan12TabsConstraintsStorage: [NSLayoutConstraint] = []
     var moreThan12TabsConstraintsStorage: [NSLayoutConstraint] = []
     
+    var scrollViewGradientLayer: CAGradientLayer?
+    
     var isReceivingDrag = false {
         didSet {
             needsDisplay = true
@@ -211,6 +213,12 @@ class CompactAddressBarAndTabsView: NSView {
         let documentView = NSView()
         documentView.wantsLayer = true
         documentView.translatesAutoresizingMaskIntoConstraints = false
+        
+        self.scrollViewGradientLayer = CAGradientLayer()
+        self.scrollViewGradientLayer?.startPoint = CGPoint(x: 0.0, y: 0.0)
+        self.scrollViewGradientLayer?.endPoint = CGPoint(x: 1.0, y: 0.0)
+        self.scrollViewGradientLayer?.colors = [NSColor.clear.cgColor, NSColor.black.cgColor, NSColor.black.cgColor, NSColor.clear.cgColor]
+        
         // Add tabs to documentView
         self.tabs.forEach(documentView.addSubview(_:))
         
@@ -358,6 +366,12 @@ class CompactAddressBarAndTabsView: NSView {
             }
             
         }
+        if tabs.count >= 12 {
+            self.scrollViewGradientLayer?.frame = self.tabContainerScrollView!.bounds
+            self.tabContainerScrollView?.layer?.mask = self.scrollViewGradientLayer
+        } else {
+            self.tabContainerScrollView?.layer?.mask = nil
+        }
         NSLayoutConstraint.activate(self.temporaryConstraintsStorage)
     }
     
@@ -437,11 +451,14 @@ class CompactAddressBarAndTabsView: NSView {
         guard tabs.count >= 11 else { return }
         if index == tabs.count - 1 {
             scrollToEndOfTabContainerScrollView()
+            self.scrollViewGradientLayer?.locations = [0, 0.05, 1, 1]
         } else if index == 0 {
             scrollToBeginningOfTabContainerScrollView()
+            self.scrollViewGradientLayer?.locations = [0, 0, 0.95, 1]
         }
         else {
             tabContainerScrollView?.contentView.scrollToVisible(tabs[index].frame)
+            self.scrollViewGradientLayer?.locations = [0, 0.05, 0.95, 1]
         }
         
     }

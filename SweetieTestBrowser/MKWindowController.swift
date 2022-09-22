@@ -32,13 +32,13 @@ class MKWindowController: NSWindowController {
         }
         configureToolbar()
         webViewContainer.delegate = self.window?.contentViewController as? ViewController
-//        self.window?.makeFirstResponder(
-//            self.window?.toolbar?.items.first { item in
-//                item.itemIdentifier == .searchBarAndTabStripIdentifier
-//            }?.view?.subviews.first { subView in
-//                subView is NSSearchField
-//            }
-//        )
+        self.window?.makeFirstResponder(
+            self.window?.toolbar?.items.first { toolbarItem in
+                toolbarItem.itemIdentifier == .searchBarAndTabStripIdentifier
+            }?.view?.subviews.first { view in
+                view is NSSearchField
+            }
+        )
         configureTitlebarAccessoryView()
     }
     
