@@ -24,6 +24,8 @@ class WebViewContainer: NSObject {
     }
     var delegate: WebViewContainerDelegate?
     
+    func insertTab(webView: MKWebView? = nil, atIndex index: Int) {}
+    
     func appendTab(webView: MKWebView? = nil, shouldSwitch: Bool = false) {
         let webView = webView ?? MKWebView()
         webView.navigationDelegate = self

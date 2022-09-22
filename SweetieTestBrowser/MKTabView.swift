@@ -74,7 +74,6 @@ class MKTabView: NSView {
     }
     var titleLabel: NSTextField!
     
-    var favIcon: NSImage?
     var favIconImageView: NSImageView!
     
     var onSelect: (() -> ())?
@@ -175,6 +174,7 @@ class MKTabView: NSView {
                 case .success(let favicon):
                     print("URL of Favicon: \(favicon.url)")
                     DispatchQueue.main.async {
+                        self.webView.favIconImage = favicon.image
                         self.favIconImageView.image = favicon.image
                     }
                     
@@ -235,28 +235,9 @@ class MKTabView: NSView {
         // Init favicon
         self.favIconImageView = NSImageView()
         self.favIconImageView.translatesAutoresizingMaskIntoConstraints = false
-        self.favIconImageView.image = favIcon ?? NSImage(named: NSImage.homeTemplateName)!
+        self.favIconImageView.image = self.webView.favIconImage ?? NSImage(named: NSImage.homeTemplateName)
         self.favIconImageView.imageScaling = .scaleProportionallyDown
         addSubview(self.favIconImageView)
-        
-        if let webViewURL = webView.url {
-            if !webViewURL.absoluteString.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                DispatchQueue.global(qos: .userInitiated).async {
-                    FaviconFinder(url: webViewURL).downloadFavicon { result in
-                        switch result {
-                        case .success(let favicon):
-                            print("URL of Favicon: \(favicon.url)")
-                            DispatchQueue.main.async {
-                                self.favIconImageView.image = favicon.image
-                            }
-                            
-                        case .failure(let error):
-                            print("Error: \(error)")
-                        }
-                    }
-                }
-            }
-        }
         
         // Setup constraints for controls
         self.favIconLeadingConstraint = self.favIconImageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 4)

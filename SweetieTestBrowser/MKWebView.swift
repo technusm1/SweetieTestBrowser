@@ -10,6 +10,7 @@ import WebKit
 
 class MKWebView: WKWebView {
     var contextMenuAction: MKWebViewContextMenuAction?
+    var favIconImage: NSImage? = nil
     
     var _tag = -1
     override var tag: Int {
