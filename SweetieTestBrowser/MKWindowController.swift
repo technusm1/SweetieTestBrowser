@@ -264,6 +264,10 @@ extension String {
 
 extension MKWindowController: NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
+        // Properly close all tabs in the window
+        for i in (0..<self.webViewContainer.tabs.count).reversed() {
+            self.webViewContainer.deleteTab(atIndex: i)
+        }
         guard let appDelegate = NSApplication.shared.delegate as? AppDelegate else { return }
         print("window close received: old size =", appDelegate.wcList.count)
         appDelegate.wcList.removeAll { windowController in

@@ -24,7 +24,10 @@ class WebViewContainer: NSObject {
     }
     var delegate: WebViewContainerDelegate?
     
-    func insertTab(webView: MKWebView? = nil, atIndex index: Int) {}
+    func insertTab(webView: MKWebView, atIndex index: Int) {
+        tabs.insert(webView, at: index)
+        currentTabIndex = index
+    }
     
     func appendTab(webView: MKWebView? = nil, shouldSwitch: Bool = false) {
         let webView = webView ?? MKWebView()
@@ -47,6 +50,8 @@ class WebViewContainer: NSObject {
     func deleteTab(atIndex index: Int) {
         guard currentTabIndex >= 0 && index >= 0 else { return }
         let removedWebView = tabs.remove(at: index)
+        removedWebView.navigateTo("about:blank")
+        removedWebView.favIconImage = nil
         for idx in index..<tabs.count {
             tabs[idx].tag -= 1
         }
