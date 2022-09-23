@@ -28,6 +28,7 @@ A barebones working browser, created as part of a recruitment challenge that mee
 Demo can be watched on the following youtube link (please see description and chapters in video for the features being demoed):
 
 [![Watch the video](https://img.youtube.com/vi/MwlMwmiVcAs/default.jpg)](https://youtu.be/MwlMwmiVcAs)
+[![Watch the video](https://img.youtube.com/vi/UJW8G_AzVFU/default.jpg)](https://youtu.be/UJW8G_AzVFU)
 
 ## Implemention details and credits
 - The app components are laid out using Auto Layout for most part, because it simplifies things. Almost all views have `translatesAutoresizingMaskIntoConstraints` set to `false`, and constraints are properly defined for each one. This allows to handle things like window resizing properly, out of the box and reliably handles UI adjustment, including animations.
