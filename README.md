@@ -20,7 +20,7 @@ A barebones working browser, created as part of a recruitment challenge that mee
 - Tab drag-and-drop requires more features (possibly scrolling on hovering around edges of scrollview) and minor bug fixes (drop indicator arrow is not shown at correct position sometimes) to be fully usable.
 
 ## Installation
-- Download the latest version of the app (DMG) from this link: https://github.com/technusm1/SweetieTestBrowser/releases/download/1.0-alpha2/SweetieTestBrowser.1.0-alpha2.dmg
+- Download the latest version of the app (DMG) from this link: https://github.com/technusm1/SweetieTestBrowser/releases/download/1.0-alpha3/SweetieTestBrowser.1.0-alpha3.dmg
 - Open the DMG.
 - Drag the app into `Applications` folder (shortcut provided in DMG).
 
