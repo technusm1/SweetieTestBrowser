@@ -17,14 +17,11 @@ class MKTabView: NSView {
             if compactMode {
                 self.favIconLeadingConstraint?.isActive = false
                 self.favIconCenteringConstraint?.isActive = true
-                titleLabel.removeFromSuperview()
+                titleLabel.isHidden = true
             } else {
                 self.favIconLeadingConstraint?.isActive = true
                 self.favIconCenteringConstraint?.isActive = false
-                addSubview(titleLabel)
-                self.titleLabel.leadingAnchor.constraint(equalTo: self.closeBtn.trailingAnchor, constant: 4).isActive = true
-                self.titleLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -4).isActive = true
-                self.titleLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
+                titleLabel.isHidden = false
             }
         }
     }
@@ -32,7 +29,7 @@ class MKTabView: NSView {
     var favIconCenteringConstraint: NSLayoutConstraint?
     var isMouseOverTheView: Bool = false {
         didSet {
-            closeBtn.isHidden = !isMouseOverTheView
+            closeBtn.isHidden = !isMouseOverTheView || compactMode
             self.favIconImageView.isHidden = isMouseOverTheView && !compactMode
             setNeedsDisplay(bounds)
         }

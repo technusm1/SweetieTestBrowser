@@ -24,8 +24,7 @@ class CompactAddressBarAndTabsView: NSView {
     var persistentConstraintsStorage: [NSLayoutConstraint] = []
     var zeroTabsConstraintsStorage: [NSLayoutConstraint] = []
     var oneOrMoreTabsConstraintsStorage: [NSLayoutConstraint] = []
-    var lessThan12TabsConstraintsStorage: [NSLayoutConstraint] = []
-    var moreThan12TabsConstraintsStorage: [NSLayoutConstraint] = []
+    var lowPriorityScrollBarStoppingConstraints: [NSLayoutConstraint] = []
     
     var scrollViewGradientLayer: CAGradientLayer?
     
@@ -202,10 +201,8 @@ class CompactAddressBarAndTabsView: NSView {
         self.zeroTabsConstraintsStorage.removeAll()
         NSLayoutConstraint.deactivate(self.oneOrMoreTabsConstraintsStorage)
         self.oneOrMoreTabsConstraintsStorage.removeAll()
-        NSLayoutConstraint.deactivate(self.lessThan12TabsConstraintsStorage)
-        self.lessThan12TabsConstraintsStorage.removeAll()
-        NSLayoutConstraint.deactivate(self.moreThan12TabsConstraintsStorage)
-        self.moreThan12TabsConstraintsStorage.removeAll()
+        NSLayoutConstraint.deactivate(self.lowPriorityScrollBarStoppingConstraints)
+        self.lowPriorityScrollBarStoppingConstraints.removeAll()
         
         
         for (idx, webView) in webViewContainer.tabs.enumerated() {
@@ -322,8 +319,8 @@ class CompactAddressBarAndTabsView: NSView {
         ]
         
         self.oneOrMoreTabsConstraintsStorage = [
-            self.addressBarAndSearchField.widthAnchor.constraint(lessThanOrEqualTo: self.widthAnchor, multiplier: 0.4),
-            self.addressBarAndSearchField.widthAnchor.constraint(greaterThanOrEqualTo: self.widthAnchor, multiplier: 0.25),
+            self.addressBarAndSearchField.widthAnchor.constraint(lessThanOrEqualToConstant: 340),
+            self.addressBarAndSearchField.widthAnchor.constraint(greaterThanOrEqualToConstant: 120),
             self.addressBarAndSearchField.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             
             // Scrollview constraints
@@ -331,12 +328,19 @@ class CompactAddressBarAndTabsView: NSView {
             self.tabContainerScrollView!.contentView.leadingAnchor.constraint(equalTo: self.addressBarAndSearchField.trailingAnchor, constant: 10),
             self.tabContainerScrollView!.documentView!.leadingAnchor.constraint(equalTo: self.addressBarAndSearchField.trailingAnchor, constant: 10)
         ]
+        let scrollerConstraint = self.tabContainerScrollView!.documentView!.trailingAnchor.constraint(equalTo: self.trailingAnchor)
+        scrollerConstraint.priority = .defaultLow
+        let addressBarWidthConst = self.addressBarAndSearchField.widthAnchor.constraint(equalToConstant: 340)
+        addressBarWidthConst.priority = .defaultLow
         
-        self.lessThan12TabsConstraintsStorage = [
-            self.tabContainerScrollView!.documentView!.trailingAnchor.constraint(equalTo: self.trailingAnchor)
+        self.lowPriorityScrollBarStoppingConstraints = [
+            scrollerConstraint,
+            addressBarWidthConst
         ]
-        
-        // For more than or equal to 12, we'll simply deactivate less than 12 constraints
+    }
+    
+    override func viewDidEndLiveResize() {
+        layoutTabs()
     }
     
     func layoutTabs() {
@@ -355,6 +359,7 @@ class CompactAddressBarAndTabsView: NSView {
             }
         } else {
             NSLayoutConstraint.deactivate(zeroTabsConstraintsStorage)
+            NSLayoutConstraint.activate(oneOrMoreTabsConstraintsStorage)
             if let win = self.window {
                 win.toolbar?.centeredItemIdentifier = nil
                 var compactBarWidth = win.frame.width / 1.15
@@ -368,54 +373,35 @@ class CompactAddressBarAndTabsView: NSView {
                 }?.minSize.width = compactBarWidth
             }
         }
-        if self.tabs.count >= 1 {
-            NSLayoutConstraint.activate(oneOrMoreTabsConstraintsStorage)
-        } else {
-            NSLayoutConstraint.deactivate(oneOrMoreTabsConstraintsStorage)
-        }
-        if self.tabs.count >= 6 {
-            compactMode = true
-        } else {
-            compactMode = false
-        }
-        // The if-else statement below covers both less than, equal to and more than 12 cases
-        if self.tabs.count < 12 {
-            NSLayoutConstraint.activate(lessThan12TabsConstraintsStorage)
-        } else {
-            NSLayoutConstraint.deactivate(lessThan12TabsConstraintsStorage)
-        }
+        
+        NSLayoutConstraint.activate(lowPriorityScrollBarStoppingConstraints)
         var previousTab: MKTabView?
         for (idx, currentTab) in self.tabs.enumerated() {
-            currentTab.compactMode = compactMode
+//            currentTab.compactMode = compactMode
             self.temporaryConstraintsStorage.append(contentsOf: [
                 currentTab.heightAnchor.constraint(equalTo: self.heightAnchor),
-                currentTab.centerYAnchor.constraint(equalTo: self.centerYAnchor)
+                currentTab.centerYAnchor.constraint(equalTo: self.centerYAnchor),
             ])
-            if self.tabs.count < 12 {
-                if idx != self.webViewContainer.currentTabIndex {
-                    self.temporaryConstraintsStorage.append(contentsOf: [
-                        currentTab.widthAnchor.constraint(lessThanOrEqualToConstant: 140),
-                        // The hope is that we'll never reach this size, even if window resizes
-                        currentTab.widthAnchor.constraint(greaterThanOrEqualTo: self.tabContainerScrollView!.widthAnchor, multiplier: 1.0/20)
-                    ])
+            if idx != self.webViewContainer.currentTabIndex {
+                if tabs.contains(where: { tabView in
+                    tabView.frame.width <= 72 && tabView.frame.width >= 32
+                }) {
+                    currentTab.compactMode = true
                 } else {
                     currentTab.compactMode = false
-                    self.temporaryConstraintsStorage.append(contentsOf: [
-                        currentTab.widthAnchor.constraint(equalToConstant: 140)
-                    ])
                 }
+                self.temporaryConstraintsStorage.append(contentsOf: [
+                    currentTab.widthAnchor.constraint(lessThanOrEqualToConstant: 130),
+                    currentTab.widthAnchor.constraint(greaterThanOrEqualToConstant: 32)
+                ])
             } else {
-                if idx != self.webViewContainer.currentTabIndex {
-                    self.temporaryConstraintsStorage.append(contentsOf: [
-                        currentTab.widthAnchor.constraint(equalTo: self.tabContainerScrollView!.contentView.widthAnchor, multiplier: 1.0/11)
-                    ])
-                } else {
-                    currentTab.compactMode = false
-                    self.temporaryConstraintsStorage.append(contentsOf: [
-                        currentTab.widthAnchor.constraint(equalToConstant: 140)
-                    ])
-                }
+                currentTab.compactMode = false
+                self.temporaryConstraintsStorage.append(contentsOf: [
+                    currentTab.widthAnchor.constraint(lessThanOrEqualToConstant: 130),
+                    currentTab.widthAnchor.constraint(greaterThanOrEqualToConstant: 120)
+                ])
             }
+            
             if let previousTab = previousTab {
                 self.temporaryConstraintsStorage.append(contentsOf: [
                     currentTab.leadingAnchor.constraint(equalTo: previousTab.trailingAnchor, constant: 5)
@@ -437,25 +423,20 @@ class CompactAddressBarAndTabsView: NSView {
             previousTab = currentTab
             NSLayoutConstraint.activate(temporaryConstraintsStorage)
         }
+        
         if let previousTab = previousTab {
-            if self.tabs.count < 6 {
-                self.temporaryConstraintsStorage.append(contentsOf: [
-                    self.tabContainerScrollView!.documentView!.trailingAnchor.constraint(greaterThanOrEqualTo: previousTab.trailingAnchor, constant: 5)
-                ])
-            } else {
-                self.temporaryConstraintsStorage.append(contentsOf: [
-                    self.tabContainerScrollView!.documentView!.trailingAnchor.constraint(equalTo: previousTab.trailingAnchor, constant: 5)
-                ])
-            }
-            
+            self.temporaryConstraintsStorage.append(contentsOf: [
+                self.tabContainerScrollView!.documentView!.trailingAnchor.constraint(greaterThanOrEqualTo: previousTab.trailingAnchor, constant: 5)
+            ])
         }
-        if tabs.count >= 12 {
+        if tabContainerScrollView!.contentView.frame.width < tabContainerScrollView!.documentView!.frame.width {
             self.scrollViewGradientLayer?.frame = self.tabContainerScrollView!.bounds
             self.tabContainerScrollView?.layer?.mask = self.scrollViewGradientLayer
         } else {
             self.tabContainerScrollView?.layer?.mask = nil
         }
         NSLayoutConstraint.activate(self.temporaryConstraintsStorage)
+        print(self.addressBarAndSearchField.frame.width, tabs.map(\.frame.width))
     }
     
     @objc func tabAppendedNotification(_ notification: Notification) {
@@ -531,20 +512,20 @@ class CompactAddressBarAndTabsView: NSView {
     }
     
     func scrollToEndOfTabContainerScrollView() {
-        if tabs.count >= 11 {
+        if tabs.count >= 0 {
             guard let width = tabContainerScrollView?.documentView?.frame.size.width else { return }
             tabContainerScrollView?.contentView.scroll(NSPoint(x: width, y: 0))
         }
     }
     
     func scrollToBeginningOfTabContainerScrollView() {
-        if tabs.count >= 11 {
+        if tabs.count >= 0 {
             tabContainerScrollView?.contentView.scroll(NSPoint(x: 0, y: 0))
         }
     }
     
     func scrollToTab(atIndex index: Int) {
-        guard tabs.count >= 11 else { return }
+        guard tabs.count >= 0 else { return }
         if index == tabs.count - 1 {
             scrollToEndOfTabContainerScrollView()
             self.scrollViewGradientLayer?.locations = [0, 0.05, 1, 1]

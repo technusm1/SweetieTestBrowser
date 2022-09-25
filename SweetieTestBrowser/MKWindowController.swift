@@ -279,7 +279,9 @@ extension MKWindowController: NSWindowDelegate {
     func windowDidResize(_ notification: Notification) {
         for item in self.window?.toolbar?.items ?? [] {
             if item.itemIdentifier == .searchBarAndTabStripIdentifier {
-                item.minSize.width = self.window!.frame.width / 1.65
+                let compactView = (item.view as? CompactAddressBarAndTabsView)
+                compactView?.layoutTabs()
+                compactView?.scrollToTab(atIndex: self.webViewContainer.currentTabIndex)
             }
         }
     }
